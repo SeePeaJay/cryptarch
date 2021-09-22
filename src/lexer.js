@@ -3,8 +3,8 @@ const PATTERNS = require('./constants')
 class Lexer {
 	constructor() {
 		this.blocksAndBlockSeparators = [];
-        // this.cursor = [0, 0];
-		// this.tokenQueue = [];
+        this.cursor = 0;
+		this.tokenQueue = [];
 		// this.ignoredPatterns = new Map();
     }
 
@@ -60,17 +60,43 @@ class Lexer {
 			this.blocksAndBlockSeparators[i] = this.blocksAndBlockSeparators[i].trim().replace(/\t/g, '');
 		}
 	}
+
+	getNextToken() {
+		if (this.cursorCannotAdvance()) {
+			return null;
+		}
+
+		if (this.tokenQueue.length) {
+			return this.tokenQueue.shift();
+		}
+
+		// this.tokenQueue.push(...this.getTokensFromCurrentCursor());
+		// return this.tokenQueue.shift();
 	}
 
-	// scan(engram) {
-	//  remove unnecessary whitespace at the beginning and end; truncate engram
-	// 	rootBlocks -> maybe at this point get \n\n already, split then insert?
-	//  blocksAndBlockSeparators -> spread operator stuff
-	// 	remove whitespace from blocks
-	//	// for each blocksAndSeparators
-	// 	// remove tabs in evens and odds
-	// 	// for list items, check with counter
-	// }
+	cursorCannotAdvance() {
+		return (this.blocksAndBlockSeparators.length == 1 && this.blocksAndBlockSeparators[0] == '') ||
+			this.cursor >= this.blocksAndBlockSeparators.length;
+	}
+
+	getTokensFromCurrentCursor() {
+		// if odd
+			// if root block separator
+				// return appropriately
+			// if list item separator
+				// return appropriately
+		
+		// must be even
+		// return getTokensFromCurrentBlock()
+	}
+
+	getTokensFromCurrentBlock() {
+		// match current block with a list of block patterns
+		// switch case?
+			// case title
+				// title marker, ...getTokensFromText()
+			// ...
+	}
 }
 
 module.exports = Lexer;
