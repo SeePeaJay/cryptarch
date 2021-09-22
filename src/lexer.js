@@ -8,13 +8,11 @@ class Lexer {
 		// this.ignoredPatterns = new Map();
     }
 
-	scan(engram) { // splitToBlocksAndBlockSeparators
+	scan(engram) {
 		const trimmedEngram = engram.trim();
-		const rootBlocks = trimmedEngram.split(PATTERNS.rootBlockSeparator); // is capturing group fine now?
+		const rootBlocks = trimmedEngram.split(PATTERNS.rootBlockSeparator);
 		this.blocksAndBlockSeparators.push(...this.getBlocksAndBlockSeparators(rootBlocks));
-		// splitListsToListItemsAndListItemSeparators
-		// this.blocksAndBlockSeparators = getBlocksAndBlockSeparators(rootBlocks);
-		// removeUnecessaryWhitespaceFromBlock(blocksAndSeparators)??
+		this.removeUnnecessaryWhitespaceInBlocks();
 	}
 
 	getBlocksAndBlockSeparators(rootBlocks) {
@@ -25,10 +23,11 @@ class Lexer {
 		}
 
 		const listPattern = new RegExp(`(${PATTERNS.unorderedList.source})|${PATTERNS.orderedList.source}`, 'g');
-		for (let i = 0; i < blocksAndBlockSeparators.length; i += 2) {
+		for (let i = 0; i < blocksAndBlockSeparators.length; i += 2) { // insert list-related stuff
 			if (blocksAndBlockSeparators[i].match(listPattern)) {
-				// console.log(blocksAndBlockSeparators[i]);
-				blocksAndBlockSeparators.splice(i, 1, ...this.getListItemsAndListItemSeparators(list));
+				blocksAndBlockSeparators.splice(
+					i, 1, ...this.getListItemsAndListItemSeparators(blocksAndBlockSeparators[i])
+				);
 			}
 		}
 		
@@ -36,18 +35,31 @@ class Lexer {
 	}
 
 	getListItemsAndListItemSeparators(list) { // should be able to clean up SAfterListItemSeparatorAndBeforeList
-		// maxIndentLevel = 1;
-		// const listItemsAndListItemSeparators = list.split();
-		// for each list item separator (skip by 2 again)
-			// get number of \t
-			// if number of \t > maxIndentLevel
-				// trim
-				// maxIndentLevel ++;
-			// else if number of \t = maxIndentLevel
-				// maxIndentLevel ++;
-			// else \t < maxIndentLevel
-				// maxIndentLevel = number of \ts + 1
-		return [];
+		const listItemsAndListItemSeparators = list.split(
+			new RegExp(`(${PATTERNS.listItemSeparator.source})`, 'g') // parentheses to include delimiter in result
+		); 
+
+		let maxIndentLevel = 0;
+		for (let i = 1; i < listItemsAndListItemSeparators.length; i += 2) {
+			const tabCount = listItemsAndListItemSeparators[i].substring(1).length; // substring excludes \n
+			if (tabCount > maxIndentLevel) {
+				listItemsAndListItemSeparators[i] = `\n${'\t'.repeat(maxIndentLevel)}`;
+				maxIndentLevel ++;
+			} else if (tabCount == maxIndentLevel) {
+				maxIndentLevel ++;
+			} else {
+				maxIndentLevel = tabCount + 1;
+			}
+		}
+
+		return listItemsAndListItemSeparators;
+	}
+
+	removeUnnecessaryWhitespaceInBlocks() {
+		for (let i = 0; i < this.blocksAndBlockSeparators.length; i += 2) {
+			this.blocksAndBlockSeparators[i] = this.blocksAndBlockSeparators[i].trim().replace(/\t/g, '');
+		}
+	}
 	}
 
 	// scan(engram) {
