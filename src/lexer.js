@@ -1,12 +1,12 @@
-const PATTERNS = require('./constants')
+const PATTERNS, TOKENS = require('./constants')
 
 class Lexer {
 	constructor() {
 		this.blocksAndBlockSeparators = [];
-        this.cursor = 0;
+		this.cursor = 0;
 		this.tokenQueue = [];
 		// this.ignoredPatterns = new Map();
-    }
+	}
 
 	scan(engram) {
 		const trimmedEngram = engram.trim();
@@ -80,14 +80,19 @@ class Lexer {
 	}
 
 	getTokensFromCurrentCursor() {
-		// if odd
-			// if root block separator
-				// return appropriately
-			// if list item separator
-				// return appropriately
+		if (this.cursor % 2) { // odd
+			if ((str.match(/\n/g) || []).length > 1) { // more than 1 \n character
+				return [TOKENS.rootBlockSeparator]; // must be root block separator
+			}
+
+			return [{ // must be list item separator
+				name: TOKENS.listItemSeparator.name,
+				value: this.blocksAndBlockSeparators[this.cursor],
+			}]; 
+		}
 		
 		// must be even
-		// return getTokensFromCurrentBlock()
+		return getTokensFromCurrentBlock();
 	}
 
 	getTokensFromCurrentBlock() {
