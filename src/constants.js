@@ -27,8 +27,8 @@ const PATTERNS = {
 	level1Subtitle: /^=1= (.|\n(?!\t*\n)(?!\t*$))*$/,
 	level2Subtitle: /^=2= (.|\n(?!\t*\n)(?!\t*$))*$/,
 	level3Subtitle: /^=3= (.|\n(?!\t*\n)(?!\t*$))*$/,
-	unorderedList: /^. (.|\n(?!\t*\n)(?!\t*$))*$/,
-	orderedList: /^\d{1,9}. (.|\n(?!\t*\n)(?!\t*$))*$/,
+	unorderedList: /^\. (.|\n(?!\t*\n)(?!\t*$))*$/,
+	orderedList: /^\d{1,9}\. (.|\n(?!\t*\n)(?!\t*$))*$/,
 	horizontalRule: /^---[^\S\n]*$/,
 
 	image: /\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+{}/,
@@ -87,7 +87,7 @@ const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES?
 		type: 'IMAGE PATH',
 	},
 	rightImageMarker: {
-		type: 'LEFT IMAGE MARKER',
+		type: 'RIGHT IMAGE MARKER',
 		value: '{}',
 	},
 
@@ -127,7 +127,7 @@ const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES?
 		type: 'LEFT STRIKETHROUGH TEXT MARKER',
 		value: '`-'
 	},
-	rightItalicTextMarker: {
+	rightStrikethroughTextMarker: {
 		type: 'RIGHT STRIKETHROUGH TEXT MARKER',
 		value: '-`'
 	},

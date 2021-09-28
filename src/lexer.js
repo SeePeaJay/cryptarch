@@ -38,11 +38,12 @@ class Lexer {
 			new RegExp(`(${PATTERNS.listItemSeparator.source})`, 'g') // parentheses to include delimiter in result
 		); 
 
-		let maxIndentLevel = 0;
+		let maxIndentLevel = 1; // can only be 1 by the moment the first list separator is reached
 		for (let i = 1; i < listItemsAndListItemSeparators.length; i += 2) {
-			const tabCount = listItemsAndListItemSeparators[i].substring(1).length; // substring excludes \n
+			listItemsAndListItemSeparators[i] = `\n${'\t'.repeat(maxIndentLevel)}`;
+
+			const tabCount = listItemsAndListItemSeparators[i].substring(1).length; // substring excludes \n			
 			if (tabCount > maxIndentLevel) {
-				listItemsAndListItemSeparators[i] = `\n${'\t'.repeat(maxIndentLevel)}`;
 				maxIndentLevel ++;
 			} else if (tabCount == maxIndentLevel) {
 				maxIndentLevel ++;
@@ -130,7 +131,7 @@ class Lexer {
 		if (currentBlock.match(PATTERNS.horizontalRule)) {
 			return [TOKENS.horizontalRule];
 		}
-		if (currentBlock.match(PATTERNS.image)) {
+		if (currentBlock.match(new RegExp(`^${PATTERNS.image.source}$`))) {
 			return this.getTokensFromImage(currentBlock);
 		}
 
@@ -144,7 +145,7 @@ class Lexer {
 		return [
 			TOKENS.leftImageMarker, 
 			{
-				type: TOKENS.imagePath,
+				type: TOKENS.imagePath.type,
 				value: imagePath
 			}, 
 			TOKENS.rightImageMarker
@@ -162,58 +163,59 @@ class Lexer {
 			});
 		} else {
 			const inlineElement = inlinePatternMatch[0];
-			const unmarkedTexts = text.split(inlineElement);
+			const unmarkedText = text.split(inlineElement)[0];
+			const remainingText = text.split(inlineElement)[1];
 
-			if (unmarkedTexts[0]) { // unmarked text before inline element
+			if (unmarkedText) { // unmarked text before inline element
 				tokens.push({
-					type: TOKENS.unmarkedText,
-					value: unmarkedTexts[0],
+					type: TOKENS.unmarkedText.type,
+					value: unmarkedText,
 				});
 			}
 
 			if (inlineElement.startsWith(TOKENS.leftBoldTextMarker.value)) {
-				const unprocessedText = text.replace(PATTERNS.leftBoldTextMarker, '').replace(PATTERNS.
-					rightBoldTextMarker, '');
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftBoldTextMarker, '').replace
+					(PATTERNS.rightBoldTextMarker, '');
 				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.boldText);
 				tokens.push(
 					TOKENS.leftBoldTextMarker, 
-					this.getTokensFromText(unprocessedText), 
+					...this.getTokensFromText(textWithinCurrentElement), 
 					TOKENS.rightBoldTextMarker,
 				);		
 			} else if (inlineElement.startsWith(TOKENS.leftItalicTextMarker.value)) {
-				const unprocessedText = text.replace(PATTERNS.leftItalicTextMarker, '').replace(PATTERNS.
-					rightItalicTextMarker, '');
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftItalicTextMarker, '').replace
+					(PATTERNS.rightItalicTextMarker, '');
 				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.italicText);
 				tokens.push(
 					TOKENS.leftItalicTextMarker, 
-					this.getTokensFromText(unprocessedText), 
+					...this.getTokensFromText(textWithinCurrentElement), 
 					TOKENS.rightItalicTextMarker,
 				);
 			} else if (inlineElement.startsWith(TOKENS.leftUnderlinedTextMarker.value)) {
-				const unprocessedText = text.replace(PATTERNS.leftUnderlinedTextMarker, '').replace(PATTERNS.
-					rightUnderlinedTextMarker, '');
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftUnderlinedTextMarker, '').replace
+					(PATTERNS.rightUnderlinedTextMarker, '');
 				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.underlinedText);
 				tokens.push(
 					TOKENS.leftUnderlinedTextMarker, 
-					this.getTokensFromText(unprocessedText), 
+					...this.getTokensFromText(textWithinCurrentElement), 
 					TOKENS.rightUnderlinedTextMarker,
 				);
 			} else if (inlineElement.startsWith(TOKENS.leftHighlightedTextMarker.value)) {
-				const unprocessedText = text.replace(PATTERNS.leftHighlightedTextMarker, '').replace(PATTERNS.
-					rightHighlightedTextMarker, '');
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftHighlightedTextMarker, '').replace
+					(PATTERNS.rightHighlightedTextMarker, '');
 				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.highlightedText);
 				tokens.push(
 					TOKENS.leftHighlightedTextMarker, 
-					this.getTokensFromText(unprocessedText), 
+					...this.getTokensFromText(textWithinCurrentElement), 
 					TOKENS.rightHighlightedTextMarker,
 				);
 			} else if (inlineElement.startsWith(TOKENS.leftStrikethroughTextMarker.value)) {
-				const unprocessedText = text.replace(PATTERNS.leftStrikethroughTextMarker, '').replace(PATTERNS.
-					rightStirkethroughTextMarker, '');
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftStrikethroughTextMarker, '').replace
+					(PATTERNS.rightStirkethroughTextMarker, '');
 				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.strikethroughText);
 				tokens.push(
 					TOKENS.leftStrikethroughTextMarker, 
-					this.getTokensFromText(unprocessedText), 
+					...this.getTokensFromText(textWithinCurrentElement), 
 					TOKENS.rightStrikethroughTextMarker,
 				);
 			} else if (inlineElement.startsWith(TOKENS.linkAliasMarker1.value)) {
@@ -223,15 +225,12 @@ class Lexer {
 			} else { // inlineElement must be an autoLink at this point
 				tokens.push({
 					type: TOKENS.autoLink.type,
-					value: inlineElement
+					value: inlineElement,
 				});
 			}
 
-			if (unmarkedTexts[1]) { // unmarked text after inline element
-				tokens.push({
-					type: TOKENS.unmarkedText,
-					value: unmarkedTexts[1],
-				});
+			if (remainingText) { // remaining text after inline element
+				tokens.push(...this.getTokensFromText(remainingText, ignoredInlinePatterns));
 			}
 		}
 
@@ -269,12 +268,12 @@ class Lexer {
 		return [
 			TOKENS.linkAliasMarker1, 
 			{
-				type: TOKENS.linkAliasTitle,
+				type: TOKENS.linkAliasTitle.type,
 				value: linkAliasTitle,
 			},
 			TOKENS.linkAliasMarker2, 
 			{
-				type: TOKENS.linkAliasUrl,
+				type: TOKENS.linkAliasUrl.type,
 				value: linkAliasUrl,
 			},
 			TOKENS.linkAliasMarker3
