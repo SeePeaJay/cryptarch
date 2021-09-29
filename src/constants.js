@@ -31,15 +31,15 @@ const PATTERNS = {
 	orderedList: /^\d{1,9}\. (.|\n(?!\t*\n)(?!\t*$))*$/,
 	horizontalRule: /^---[^\S\n]*$/,
 
-	image: /\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+{}/,
+	image: /^\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+{}$/,
 
-	boldText: /`@(?!\n@`)(.|\n(?!\t*\n)(?!\t*$))+@`/,
-	italicText: /`\/(?!\n\/`)(.|\n(?!\t*\n)(?!\t*$))+\/`/,
-	underlinedText: /`_(?!\n_`)(.|\n(?!\t*\n)(?!\t*$))+_`/,
-	highlightedText: /`=(?!\n=`)(.|\n(?!\t*\n)(?!\t*$))+=`/,
-	strikethroughText: /`-(?!\n-`)(.|\n(?!\t*\n)(?!\t*$))+-`/,
-	linkAlias: /`_(?!\n_\()(.|\n(?!\t*\n)(?!\t*$))+_\((?!\n\)`)(.|\n(?!\t*\n)(?!\t*$))+\)`/,
-	autoLink: /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/,
+	boldText: /^`@(?!\n@`)(.|\n(?!\t*\n)(?!\t*$))+@`$/,
+	italicText: /^`\/(?!\n\/`)(.|\n(?!\t*\n)(?!\t*$))+\/`$/,
+	underlinedText: /^`_(?!\n_`)(.|\n(?!\t*\n)(?!\t*$))+_`$/,
+	highlightedText: /^`=(?!\n=`)(.|\n(?!\t*\n)(?!\t*$))+=`$/,
+	strikethroughText: /^`-(?!\n-`)(.|\n(?!\t*\n)(?!\t*$))+-`$/,
+	linkAlias: /^`_(?!\n_\()(.|\n(?!\t*\n)(?!\t*$))+_\((?!\n\)`)(.|\n(?!\t*\n)(?!\t*$))+\)`$/,
+	autoLink: /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/,
 
 	rootBlockSeparator: /\n(?:\s|\t)*\n/, // still need non-capturing group to split properly
 	listItemSeparator: /\n[^\S\n]*(?=(?:\d{1,9})?\. )/
@@ -50,7 +50,7 @@ const PATTERNS = {
 		*/
 };
 
-const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES?
+const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES? TOKEN_TEMPLATES?
 	titleMarker: {
 		type: 'TITLE MARKER',
 		value: '* ',

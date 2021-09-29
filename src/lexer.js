@@ -164,7 +164,7 @@ class Lexer {
 		} else {
 			const inlineElement = inlinePatternMatch[0];
 			const unmarkedText = text.split(inlineElement)[0];
-			const remainingText = text.split(inlineElement)[1];
+			const remainingText = text.substring(unmarkedText.length + inlineElement.length);
 
 			if (unmarkedText) { // unmarked text before inline element
 				tokens.push({
@@ -173,54 +173,64 @@ class Lexer {
 				});
 			}
 
-			if (inlineElement.startsWith(TOKENS.leftBoldTextMarker.value)) {
+			if (inlineElement.match(PATTERNS.boldText)) {
 				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftBoldTextMarker, '').replace
 					(PATTERNS.rightBoldTextMarker, '');
-				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.boldText);
+				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
+					ignoredInlinePatterns, PATTERNS.boldText
+				);
 				tokens.push(
 					TOKENS.leftBoldTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightBoldTextMarker,
 				);		
-			} else if (inlineElement.startsWith(TOKENS.leftItalicTextMarker.value)) {
+			} else if (inlineElement.match(PATTERNS.italicText)) {
 				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftItalicTextMarker, '').replace
 					(PATTERNS.rightItalicTextMarker, '');
-				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.italicText);
+				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
+					ignoredInlinePatterns, PATTERNS.italicText
+				);
 				tokens.push(
 					TOKENS.leftItalicTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightItalicTextMarker,
 				);
-			} else if (inlineElement.startsWith(TOKENS.leftUnderlinedTextMarker.value)) {
+			} else if (inlineElement.match(PATTERNS.underlinedText)) {
 				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftUnderlinedTextMarker, '').replace
 					(PATTERNS.rightUnderlinedTextMarker, '');
-				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.underlinedText);
+				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
+					ignoredInlinePatterns, PATTERNS.underlinedText
+				);
 				tokens.push(
 					TOKENS.leftUnderlinedTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightUnderlinedTextMarker,
 				);
-			} else if (inlineElement.startsWith(TOKENS.leftHighlightedTextMarker.value)) {
+			} else if (inlineElement.match(PATTERNS.highlightedText)) {
 				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftHighlightedTextMarker, '').replace
 					(PATTERNS.rightHighlightedTextMarker, '');
-				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.highlightedText);
+				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
+					ignoredInlinePatterns, PATTERNS.highlightedText
+				);
 				tokens.push(
 					TOKENS.leftHighlightedTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightHighlightedTextMarker,
 				);
-			} else if (inlineElement.startsWith(TOKENS.leftStrikethroughTextMarker.value)) {
+			} else if (inlineElement.match(PATTERNS.strikethroughText)) {
 				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftStrikethroughTextMarker, '').replace
 					(PATTERNS.rightStirkethroughTextMarker, '');
-				this.updateIgnoredInlinePatterns(ignoredInlinePatterns, PATTERNS.strikethroughText);
+				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
+					ignoredInlinePatterns, PATTERNS.strikethroughText
+				);
 				tokens.push(
 					TOKENS.leftStrikethroughTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightStrikethroughTextMarker,
 				);
-			} else if (inlineElement.startsWith(TOKENS.linkAliasMarker1.value)) {
+			} else if (inlineElement.match(PATTERNS.linkAlias)) {
 				tokens.push(...this.getTokensFromLinkAlias(inlineElement));
-			} else if (inlineElement.startsWith(TOKENS.leftImageMarker)) {
+			} else if (inlineElement.match(PATTERNS.image)) {
 				tokens.push(...this.getTokensFromImage(inlineElement));
 			} else { // inlineElement must be an autoLink at this point
 				tokens.push({
@@ -237,22 +247,26 @@ class Lexer {
 		return tokens;
 	}
 
-	updateIgnoredInlinePatterns(ignoredInlinePatterns, inlinePattern) {
+	getNewIgnoredInlinePatterns(ignoredInlinePatterns, inlinePattern) {
+		const newIgnoredInlinePatterns = ignoredInlinePatterns;
+
 		if (!ignoredInlinePatterns.includes(inlinePattern)) {
-			ignoredInlinePatterns.push(inlinePattern);
+			newIgnoredInlinePatterns.push(inlinePattern);
 		}
+
+		return newIgnoredInlinePatterns;
 	}
 
 	getInlinePattern(ignoredInlinePatterns) {
 		const allInlinePatterns = [PATTERNS.boldText, PATTERNS.italicText, PATTERNS.underlinedText, PATTERNS.
-			highlightedText, PATTERNS.strikethroughText, PATTERNS.linkAlias, PATTERNS.autoLink];
+			highlightedText, PATTERNS.strikethroughText, PATTERNS.linkAlias, PATTERNS.autoLink, PATTERNS.image];
 		const filteredInlinePatterns = allInlinePatterns.filter(
 			inlinePattern => !ignoredInlinePatterns.includes(inlinePattern)
 		);
 
 		let inlinePatternString = '';
 		for (const inlinePattern of filteredInlinePatterns) {
-			inlinePatternString += `(${inlinePattern.source})|`
+			inlinePatternString += `(${inlinePattern.source.slice(1, -1)})|`
 		}
 		inlinePatternString = inlinePatternString.slice(0, -1); 
 
