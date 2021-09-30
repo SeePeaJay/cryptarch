@@ -77,7 +77,7 @@ class Lexer {
 
 	cursorCannotAdvance() {
 		return (this.blocksAndBlockSeparators.length == 1 && this.blocksAndBlockSeparators[0] == '') ||
-			this.cursor >= this.blocksAndBlockSeparators.length;
+			(this.cursor >= this.blocksAndBlockSeparators.length && this.tokenQueue.length == 0);
 	}
 
 	getTokensFromCurrentCursor() {
@@ -117,11 +117,11 @@ class Lexer {
 			const text = currentBlock.split(PATTERNS.level3SubtitleMarker)[1];
 			return [TOKENS.level3SubtitleMarker, ...this.getTokensFromText(text)];
 		}
-		if (currentBlock.match(PATTERNS.unorderedList)) { // is this ok? list item matching the whole list?
+		if (currentBlock.match(PATTERNS.unorderedList)) { // I think it's ok for list item to match the whole list?
 			const text = currentBlock.split(PATTERNS.unorderedListMarker)[1];
 			return [TOKENS.unorderedListMarker, ...this.getTokensFromText(text)];
 		}
-		if (currentBlock.match(PATTERNS.orderedList)) { // same idea - list item matching the whole list?
+		if (currentBlock.match(PATTERNS.orderedList)) { // same idea as right above
 			const text = currentBlock.split(PATTERNS.orderedListMarker)[1];
 			return [{
 				type: TOKENS.unorderedListMarker.type,
@@ -274,8 +274,8 @@ class Lexer {
 	}
 
 	getTokensFromLinkAlias(linkAlias) {
-		const linkAliasTitleAndUrl = linkAlias.replace(PATTERNS.linkAliasMarker1, '').replace(PATTERNS.linkAliasMarker3)
-			.split(PATTERNS.linkAliasMarker2);
+		const linkAliasTitleAndUrl = linkAlias.replace(PATTERNS.linkAliasMarker1, '').replace(PATTERNS.
+			linkAliasMarker3, '').split(PATTERNS.linkAliasMarker2);
 		const linkAliasTitle = linkAliasTitleAndUrl[0];
 		const linkAliasUrl = linkAliasTitleAndUrl[1];
 		

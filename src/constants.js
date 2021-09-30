@@ -53,101 +53,80 @@ const PATTERNS = {
 const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES? TOKEN_TEMPLATES?
 	titleMarker: {
 		type: 'TITLE MARKER',
-		value: '* ',
 	},
 	level1SubtitleMarker: {
 		type: 'LEVEL 1 SUBTITLE MARKER',
-		value: '=1= ',
 	},
 	level2SubtitleMarker: {
 		type: 'LEVEL 2 SUBTITLE MARKER',
-		value: '=2= ',
 	},
 	level3SubtitleMarker: {
 		type: 'LEVEL 3 SUBTITLE MARKER',
-		value: '=3= ',
 	},
 	unorderedListMarker: {
 		type: 'UNORDERED LIST MARKER',
-		value: '. ',
 	},
 	orderedListMarker: {
 		type: 'ORDERED LIST MARKER',
 	},
 	horizontalRule: {
 		type: 'HORIZONTAL RULE',
-		value: '---',
 	},
 
 	leftImageMarker: {
 		type: 'LEFT IMAGE MARKER',
-		value: '$',
 	},
 	imagePath: {
 		type: 'IMAGE PATH',
 	},
 	rightImageMarker: {
 		type: 'RIGHT IMAGE MARKER',
-		value: '{}',
 	},
 
 	leftBoldTextMarker: {
 		type: 'LEFT BOLD TEXT MARKER',
-		value: '`@',
 	},
 	rightBoldTextMarker: {
 		type: 'RIGHT BOLD TEXT MARKER',
-		value: '@`'
 	},
 	leftItalicTextMarker: {
 		type: 'LEFT ITALIC TEXT MARKER',
-		value: '`/'
 	},
 	rightItalicTextMarker: {
 		type: 'RIGHT ITALIC TEXT MARKER',
-		value: '/`'
 	},
 	leftUnderlinedTextMarker: {
 		type: 'LEFT UNDERLINED TEXT MARKER',
-		value: '`_'
 	},
 	rightUnderlinedTextMarker: {
 		type: 'RIGHT UNDERLINED TEXT MARKER',
-		value: '_`'
 	},
 	leftHighlightedTextMarker: {
 		type: 'LEFT HIGHLIGHTED TEXT MARKER',
-		value: '`='
 	},
 	rightHighlightedTextMarker: {
 		type: 'RIGHT HIGHLIGHTED TEXT MARKER',
-		value: '=`'
 	},
 	leftStrikethroughTextMarker: {
 		type: 'LEFT STRIKETHROUGH TEXT MARKER',
-		value: '`-'
 	},
 	rightStrikethroughTextMarker: {
 		type: 'RIGHT STRIKETHROUGH TEXT MARKER',
-		value: '-`'
 	},
 	linkAliasMarker1: {
 		type: 'LINK ALIAS MARKER 1',
-		value: '`_',
 	},
 	linkAliasTitle: {
 		type: 'LINK ALIAS TITLE',
 	},
 	linkAliasMarker2: {
 		type: 'LINK ALIAS MARKER 2',
-		value: '_(',
 	},
 	linkAliasUrl: {
 		type: 'LINK ALIAS URL',
 	},
 	linkAliasMarker3: {
 		type: 'LINK ALIAS MARKER 3',
-		value: ')`',
 	},
 	autoLink: {
 		type: 'AUTO LINK',
@@ -159,7 +138,6 @@ const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES? TOKEN_TEMPL
 
 	rootBlockSeparator: {
 		type: 'ROOT BLOCK SEPARATOR',
-		value: '\n\n'
 	},
 	listItemSeparator: {
 		type: 'LIST ITEM SEPARATOR',
