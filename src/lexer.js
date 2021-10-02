@@ -21,7 +21,7 @@ class Lexer {
 			blocksAndBlockSeparators.splice(i + 1, 0, '\n\n');
 		}
 
-		const listPattern = new RegExp(`(${PATTERNS.unorderedList.source})|(${PATTERNS.orderedList.source})`, 'g');
+		const listPattern = new RegExp(`(${PATTERNS.block.unorderedList.source})|(${PATTERNS.block.orderedList.source})`);
 		for (let i = 0; i < blocksAndBlockSeparators.length; i += 2) { // insert list-related stuff
 			if (blocksAndBlockSeparators[i].match(listPattern)) {
 				blocksAndBlockSeparators.splice(
@@ -76,7 +76,7 @@ class Lexer {
 	}
 
 	cursorCannotAdvance() {
-		return (this.blocksAndBlockSeparators.length == 1 && this.blocksAndBlockSeparators[0] == '') ||
+		return (this.blocksAndBlockSeparators.length == 1 && this.blocksAndBlockSeparators[0] == '') || 
 			(this.cursor >= this.blocksAndBlockSeparators.length && this.tokenQueue.length == 0);
 	}
 
@@ -88,10 +88,12 @@ class Lexer {
 				return [TOKENS.rootBlockSeparator]; // must be root block separator
 			}
 
-			return [{ // must be list item separator
-				type: TOKENS.listItemSeparator.type,
-				value: this.blocksAndBlockSeparators[this.cursor],
-			}]; 
+			return [ // must be list item separator
+				{ 
+					type: TOKENS.listItemSeparator.type,
+					value: this.blocksAndBlockSeparators[this.cursor],
+				}
+			]; 
 		}
 		
 		// cursor must be even
@@ -101,37 +103,40 @@ class Lexer {
 	getTokensFromCurrentBlock() {
 		const currentBlock = this.blocksAndBlockSeparators[this.cursor];
 
-		if (currentBlock.match(PATTERNS.title)) {
-			const text = currentBlock.split(PATTERNS.titleMarker)[1];
+		if (currentBlock.match(PATTERNS.block.title)) {
+			const text = currentBlock.split(PATTERNS.marker.titleMarker)[1];
 			return [TOKENS.titleMarker, ...this.getTokensFromText(text)];
 		}
-		if (currentBlock.match(PATTERNS.level1Subtitle)) {
-			const text = currentBlock.split(PATTERNS.level1SubtitleMarker)[1];
+		if (currentBlock.match(PATTERNS.block.level1Subtitle)) {
+			const text = currentBlock.split(PATTERNS.marker.level1SubtitleMarker)[1];
 			return [TOKENS.level1SubtitleMarker, ...this.getTokensFromText(text)];
 		}
-		if (currentBlock.match(PATTERNS.level2Subtitle)) {
-			const text = currentBlock.split(PATTERNS.level2SubtitleMarker)[1];
+		if (currentBlock.match(PATTERNS.block.level2Subtitle)) {
+			const text = currentBlock.split(PATTERNS.marker.level2SubtitleMarker)[1];
 			return [TOKENS.level2SubtitleMarker, ...this.getTokensFromText(text)];
 		}
-		if (currentBlock.match(PATTERNS.level3Subtitle)) {
-			const text = currentBlock.split(PATTERNS.level3SubtitleMarker)[1];
+		if (currentBlock.match(PATTERNS.block.level3Subtitle)) {
+			const text = currentBlock.split(PATTERNS.marker.level3SubtitleMarker)[1];
 			return [TOKENS.level3SubtitleMarker, ...this.getTokensFromText(text)];
 		}
-		if (currentBlock.match(PATTERNS.unorderedList)) { // I think it's ok for list item to match the whole list?
-			const text = currentBlock.split(PATTERNS.unorderedListMarker)[1];
+		if (currentBlock.match(PATTERNS.block.unorderedList)) { // I think it's ok for list item to match the whole list?
+			const text = currentBlock.split(PATTERNS.marker.unorderedListMarker)[1];
 			return [TOKENS.unorderedListMarker, ...this.getTokensFromText(text)];
 		}
-		if (currentBlock.match(PATTERNS.orderedList)) { // same idea as right above
-			const text = currentBlock.split(PATTERNS.orderedListMarker)[1];
-			return [{
-				type: TOKENS.unorderedListMarker.type,
-				value: currentBlock.match(PATTERNS.orderedListMarker)[0]
-			}, ...this.getTokensFromText(text)];
+		if (currentBlock.match(PATTERNS.block.orderedList)) { // same idea as right above
+			const text = currentBlock.split(PATTERNS.marker.orderedListMarker)[1];
+			return [
+				{
+					type: TOKENS.unorderedListMarker.type,
+					value: currentBlock.match(PATTERNS.marker.orderedListMarker)[0]
+				}, 
+				...this.getTokensFromText(text)
+			];
 		}
-		if (currentBlock.match(PATTERNS.horizontalRule)) {
+		if (currentBlock.match(PATTERNS.block.horizontalRule)) {
 			return [TOKENS.horizontalRule];
 		}
-		if (currentBlock.match(new RegExp(`^${PATTERNS.image.source}$`))) {
+		if (currentBlock.match(PATTERNS.block.image)) {
 			return this.getTokensFromImage(currentBlock);
 		}
 
@@ -140,7 +145,7 @@ class Lexer {
 	}
 
 	getTokensFromImage(image) {
-		const imagePath = image.replace(PATTERNS.leftImageMarker, '').replace(PATTERNS.rightImageMarker, '');
+		const imagePath = image.replace(PATTERNS.marker.leftImageMarker, '').replace(PATTERNS.marker.rightImageMarker, 		'');
 
 		return [
 			TOKENS.leftImageMarker, 
@@ -154,15 +159,15 @@ class Lexer {
 
 	getTokensFromText(text, ignoredInlinePatterns = []) {
 		const tokens = [];
-		const inlinePatternMatch = text.match(this.getInlinePattern(ignoredInlinePatterns));
+		const inlinePatternMatchInText = text.match(this.getInlinePattern(ignoredInlinePatterns));
 
-		if (!inlinePatternMatch) {
+		if (!inlinePatternMatchInText) {
 			tokens.push({
 				type: TOKENS.unmarkedText.type,
 				value: text,
 			});
 		} else {
-			const inlineElement = inlinePatternMatch[0];
+			const inlineElement = inlinePatternMatchInText[0];
 			const unmarkedText = text.split(inlineElement)[0];
 			const remainingText = text.substring(unmarkedText.length + inlineElement.length);
 
@@ -173,64 +178,62 @@ class Lexer {
 				});
 			}
 
-			if (inlineElement.match(PATTERNS.boldText)) {
-				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftBoldTextMarker, '').replace
-					(PATTERNS.rightBoldTextMarker, '');
+			if (inlineElement.match(new RegExp(`^${PATTERNS.inline.boldText.source}$`))) {
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.marker.leftBoldTextMarker, '').replace		(PATTERNS.marker.rightBoldTextMarker, '');
 				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
-					ignoredInlinePatterns, PATTERNS.boldText
+					ignoredInlinePatterns, PATTERNS.inline.boldText
 				);
 				tokens.push(
 					TOKENS.leftBoldTextMarker, 
 					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightBoldTextMarker,
 				);		
-			} else if (inlineElement.match(PATTERNS.italicText)) {
-				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftItalicTextMarker, '').replace
-					(PATTERNS.rightItalicTextMarker, '');
+			} else if (inlineElement.match(new RegExp(`^${PATTERNS.inline.italicText.source}$`))) {
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.marker.leftItalicTextMarker, '').replace
+					(PATTERNS.marker.rightItalicTextMarker, '');
 				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
-					ignoredInlinePatterns, PATTERNS.italicText
+					ignoredInlinePatterns, PATTERNS.inline.italicText
 				);
 				tokens.push(
 					TOKENS.leftItalicTextMarker, 
 					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightItalicTextMarker,
 				);
-			} else if (inlineElement.match(PATTERNS.underlinedText)) {
-				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftUnderlinedTextMarker, '').replace
-					(PATTERNS.rightUnderlinedTextMarker, '');
+			} else if (inlineElement.match(new RegExp(`^${PATTERNS.inline.underlinedText.source}$`))) {
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.marker.leftUnderlinedTextMarker, '').	
+					replace(PATTERNS.marker.rightUnderlinedTextMarker, '');
 				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
-					ignoredInlinePatterns, PATTERNS.underlinedText
+					ignoredInlinePatterns, PATTERNS.inline.underlinedText
 				);
 				tokens.push(
 					TOKENS.leftUnderlinedTextMarker, 
 					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightUnderlinedTextMarker,
 				);
-			} else if (inlineElement.match(PATTERNS.highlightedText)) {
-				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftHighlightedTextMarker, '').replace
-					(PATTERNS.rightHighlightedTextMarker, '');
+			} else if (inlineElement.match(new RegExp(`^${PATTERNS.inline.highlightedText.source}$`))) {
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.marker.leftHighlightedTextMarker, '').	
+					replace(PATTERNS.marker.rightHighlightedTextMarker, '');
 				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
-					ignoredInlinePatterns, PATTERNS.highlightedText
+					ignoredInlinePatterns, PATTERNS.inline.highlightedText
 				);
 				tokens.push(
 					TOKENS.leftHighlightedTextMarker, 
 					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightHighlightedTextMarker,
 				);
-			} else if (inlineElement.match(PATTERNS.strikethroughText)) {
-				const textWithinCurrentElement = inlineElement.replace(PATTERNS.leftStrikethroughTextMarker, '').replace
-					(PATTERNS.rightStirkethroughTextMarker, '');
+			} else if (inlineElement.match(new RegExp(`^${PATTERNS.inline.strikethroughText.source}$`))) {
+				const textWithinCurrentElement = inlineElement.replace(PATTERNS.marker.leftStrikethroughTextMarker, '').	replace(PATTERNS.marker.rightStirkethroughTextMarker, '');
 				const newIgnoredInlinePatterns = this.getNewIgnoredInlinePatterns(
-					ignoredInlinePatterns, PATTERNS.strikethroughText
+					ignoredInlinePatterns, PATTERNS.inline.strikethroughText
 				);
 				tokens.push(
 					TOKENS.leftStrikethroughTextMarker, 
 					...this.getTokensFromText(textWithinCurrentElement, newIgnoredInlinePatterns), 
 					TOKENS.rightStrikethroughTextMarker,
 				);
-			} else if (inlineElement.match(PATTERNS.linkAlias)) {
+			} else if (inlineElement.match(new RegExp(`^${PATTERNS.inline.linkAlias.source}$`))) {
 				tokens.push(...this.getTokensFromLinkAlias(inlineElement));
-			} else if (inlineElement.match(PATTERNS.image)) {
+			} else if (inlineElement.match(new RegExp(`^${PATTERNS.inline.image.source}$`))) {
 				tokens.push(...this.getTokensFromImage(inlineElement));
 			} else { // inlineElement must be an autoLink at this point
 				tokens.push({
@@ -248,7 +251,7 @@ class Lexer {
 	}
 
 	getNewIgnoredInlinePatterns(ignoredInlinePatterns, inlinePattern) {
-		const newIgnoredInlinePatterns = ignoredInlinePatterns;
+		const newIgnoredInlinePatterns = [...ignoredInlinePatterns];
 
 		if (!ignoredInlinePatterns.includes(inlinePattern)) {
 			newIgnoredInlinePatterns.push(inlinePattern);
@@ -258,15 +261,15 @@ class Lexer {
 	}
 
 	getInlinePattern(ignoredInlinePatterns) {
-		const allInlinePatterns = [PATTERNS.boldText, PATTERNS.italicText, PATTERNS.underlinedText, PATTERNS.
-			highlightedText, PATTERNS.strikethroughText, PATTERNS.linkAlias, PATTERNS.autoLink, PATTERNS.image];
+		const allInlinePatterns = [PATTERNS.inline.boldText, PATTERNS.inline.italicText, PATTERNS.inline.			
+			underlinedText, PATTERNS.inline.highlightedText, PATTERNS.inline.strikethroughText, PATTERNS.inline.linkAlias, PATTERNS.inline.autoLink, PATTERNS.inline.image];
 		const filteredInlinePatterns = allInlinePatterns.filter(
 			inlinePattern => !ignoredInlinePatterns.includes(inlinePattern)
 		);
 
 		let inlinePatternString = '';
 		for (const inlinePattern of filteredInlinePatterns) {
-			inlinePatternString += `(${inlinePattern.source.slice(1, -1)})|`
+			inlinePatternString += `(${inlinePattern.source})|`
 		}
 		inlinePatternString = inlinePatternString.slice(0, -1); 
 
@@ -274,8 +277,8 @@ class Lexer {
 	}
 
 	getTokensFromLinkAlias(linkAlias) {
-		const linkAliasTitleAndUrl = linkAlias.replace(PATTERNS.linkAliasMarker1, '').replace(PATTERNS.
-			linkAliasMarker3, '').split(PATTERNS.linkAliasMarker2);
+		const linkAliasTitleAndUrl = linkAlias.replace(PATTERNS.marker.linkAliasMarker1, '').replace(PATTERNS.marker.
+			linkAliasMarker3, '').split(PATTERNS.marker.linkAliasMarker2);
 		const linkAliasTitle = linkAliasTitleAndUrl[0];
 		const linkAliasUrl = linkAliasTitleAndUrl[1];
 		

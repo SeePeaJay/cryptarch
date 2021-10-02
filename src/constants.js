@@ -1,47 +1,56 @@
 const PATTERNS = {
-	titleMarker: /^\* /,
-	level1SubtitleMarker: /^=1= /,
-	level2SubtitleMarker: /^=2= /,
-	level3SubtitleMarker: /^=3= /,
-	unorderedListMarker: /^. /,
-	orderedListMarker: /^\d{1,9}. /,
+	block: { // used to match against a block
+		title: /^\* (.|\n(?!\t*\n)(?!\t*$))*$/,
+		level1Subtitle: /^=1= (.|\n(?!\t*\n)(?!\t*$))*$/,
+		level2Subtitle: /^=2= (.|\n(?!\t*\n)(?!\t*$))*$/,
+		level3Subtitle: /^=3= (.|\n(?!\t*\n)(?!\t*$))*$/,
+		unorderedList: /^\. (.|\n(?!\t*\n)(?!\t*$))*$/,
+		orderedList: /^\d{1,9}\. (.|\n(?!\t*\n)(?!\t*$))*$/,
+		horizontalRule: /^---[^\S\n]*$/,
 
-	leftImageMarker: /^\$/,
-	rightImageMarker: /{}$/,
+		image: /^\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+?{}$/,
+	},
+	inline: { // used to match against text
+		boldText: /`@(?!\n@`)(?:.|\n(?!\t*\n)(?!\t*$))+?@`/,
+		italicText: /`\/(?!\n\/`)(?:.|\n(?!\t*\n)(?!\t*$))+?\/`/,
+		underlinedText: /`_(?!\n_`)(?:.|\n(?!\t*\n)(?!\t*$))+?_`/,
+		highlightedText: /`=(?!\n=`)(?:.|\n(?!\t*\n)(?!\t*$))+?=`/,
+		strikethroughText: /`-(?!\n-`)(?:.|\n(?!\t*\n)(?!\t*$))+?-`/,
+		linkAlias: /`_(?!\n_\()(?:.|\n(?!\t*\n)(?!\t*$))+?_\((?!\n\)`)(?:.|\n(?!\t*\n)(?!\t*$))+?\)`/,
+		autoLink: /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/,
 
-	leftBoldTextMarker: /^`@/,
-	rightBoldTextMarker: /@`$/,
-	leftItalicTextMarker: /^`\//,
-	rightItalicTextMarker: /\/`$/,
-	leftUnderlinedTextMarker: /^`_/,
-	rightUnderlinedTextMarker: /_`$/,
-	leftHighlightedTextMarker: /^`=/,
-	rightHighlightedTextMarker: /=`$/,
-	leftStrikethroughTextMarker: /^`-/,
-	rightStirkethroughTextMarker: /-`$/,
-	linkAliasMarker1: /^`_/,
-	linkAliasMarker2: /_\(/, // use to match against a link alias.
-	linkAliasMarker3: /\)`/,
-	//
-	title: /^\* (.|\n(?!\t*\n)(?!\t*$))*$/,
-	level1Subtitle: /^=1= (.|\n(?!\t*\n)(?!\t*$))*$/,
-	level2Subtitle: /^=2= (.|\n(?!\t*\n)(?!\t*$))*$/,
-	level3Subtitle: /^=3= (.|\n(?!\t*\n)(?!\t*$))*$/,
-	unorderedList: /^\. (.|\n(?!\t*\n)(?!\t*$))*$/,
-	orderedList: /^\d{1,9}\. (.|\n(?!\t*\n)(?!\t*$))*$/,
-	horizontalRule: /^---[^\S\n]*$/,
+		image: /\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+?{}/,
+	},
+	marker: { // used to match against each respective element
+		titleMarker: /^\* /,
+		level1SubtitleMarker: /^=1= /,
+		level2SubtitleMarker: /^=2= /,
+		level3SubtitleMarker: /^=3= /,
+		unorderedListMarker: /^. /,
+		orderedListMarker: /^\d{1,9}. /,
 
-	image: /^\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+{}$/,
+		leftImageMarker: /^\$/,
+		rightImageMarker: /{}$/,
 
-	boldText: /^`@(?!\n@`)(.|\n(?!\t*\n)(?!\t*$))+@`$/,
-	italicText: /^`\/(?!\n\/`)(.|\n(?!\t*\n)(?!\t*$))+\/`$/,
-	underlinedText: /^`_(?!\n_`)(.|\n(?!\t*\n)(?!\t*$))+_`$/,
-	highlightedText: /^`=(?!\n=`)(.|\n(?!\t*\n)(?!\t*$))+=`$/,
-	strikethroughText: /^`-(?!\n-`)(.|\n(?!\t*\n)(?!\t*$))+-`$/,
-	linkAlias: /^`_(?!\n_\()(.|\n(?!\t*\n)(?!\t*$))+_\((?!\n\)`)(.|\n(?!\t*\n)(?!\t*$))+\)`$/,
-	autoLink: /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/,
-
-	rootBlockSeparator: /\n(?:\s|\t)*\n/, // still need non-capturing group to split properly
+		leftBoldTextMarker: /^`@/,
+		rightBoldTextMarker: /@`$/,
+		leftItalicTextMarker: /^`\//,
+		rightItalicTextMarker: /\/`$/,
+		leftUnderlinedTextMarker: /^`_/,
+		rightUnderlinedTextMarker: /_`$/,
+		leftHighlightedTextMarker: /^`=/,
+		rightHighlightedTextMarker: /=`$/,
+		leftStrikethroughTextMarker: /^`-/,
+		rightStirkethroughTextMarker: /-`$/,
+		linkAliasMarker1: /^`_/,
+		linkAliasMarker2: /_\(/,
+		linkAliasMarker3: /\)`/,
+	},
+	rootBlockSeparator: /\n(?:\s|\t)*\n/, 
+		/* 
+			used to match against the whole engram
+			still need non-capturing group to split properly
+		*/
 	listItemSeparator: /\n[^\S\n]*(?=(?:\d{1,9})?\. )/
 		/*
 			This specific pattern only works when matched against a list.
