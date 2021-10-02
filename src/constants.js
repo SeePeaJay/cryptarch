@@ -1,4 +1,4 @@
-const PATTERNS = {
+const RULES = {
 	block: { // used to match against a block
 		title: /^\* (.|\n(?!\t*\n)(?!\t*$))*$/,
 		level1Subtitle: /^=1= (.|\n(?!\t*\n)(?!\t*$))*$/,
@@ -154,4 +154,4 @@ const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES? TOKEN_TEMPL
 }
 // I guess we can create a Token type in the future? And we could create custom token templates here.
 
-module.exports = { PATTERNS, TOKENS };
+module.exports = { RULES, TOKENS };
