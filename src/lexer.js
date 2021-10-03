@@ -127,7 +127,7 @@ class Lexer {
 			const text = currentBlock.split(RULES.marker.orderedListMarker)[1];
 			return [
 				{
-					type: TOKENS.unorderedListMarker.type,
+					type: TOKENS.orderedListMarker.type,
 					value: currentBlock.match(RULES.marker.orderedListMarker)[0]
 				}, 
 				...this.getTokensFromText(text)
