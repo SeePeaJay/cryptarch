@@ -50,9 +50,16 @@ class Parser {
 				case TOKENS.leftImageMarker.type:
 					blockNodes.push(this.getImageNode());
 					break;
+				case TOKENS.rootBlockSeparator.type:
+					this.eat(TOKENS.rootBlockSeparator);
+					break;
+				default: // should be a paragraph at this point
+					rootBlockNodes.push(this.getParagraphNode());
 			}
 			// ...
 		}
+
+		return rootBlockNodes;
 	}
 
 	getTitleNode() {
@@ -80,27 +87,104 @@ class Parser {
 	}
 
 	getLevel3SubtitleNode() {
-		this.eat(TOKENS.level2SubtitleMarker);
+		this.eat(TOKENS.level3SubtitleMarker);
 		return {
 			type: 'level 3 subtitle',
 			text: this.getTextNodes(),
 		}
 	}
 
-	getUnorderedListNode() {
-		this.eat(TOKENS.unorderedListMarker);
+	getUnorderedListNode(currentIndentLevel) {
 		return {
-			type: 'unordered list',
-			text: this.getTextNodes(),
+			type: TREE_NODE_TYPES.unorderedList,
+			items: this.getUnorderedListItemNodes(currentIndentLevel),
 		}
 	}
 
-	getOrderedListNode() {
-		this.eat(TOKENS.unorderedListMarker);
-		return {
-			type: 'ordered list',
-			text: this.getTextNodes(),
+	getUnorderedListItemNodes(currentIndentLevel) {
+		const unorderedListItemNodes = [];
+
+		unorderedListItemNodes.push(this.getUnorderedListItemNode(currentIndentLevel)); // unordered list should have at least one item
+		while (this.lookahead && this.lookahead.type !== TOKENS.rootBlockSeparator.type) {
+			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
+
+			if (nextIndentLevel == currentIndentLevel) {
+				this.eat(TOKENS.listItemSeparator);
+				unorderedListItemNodes.push(this.getUnorderedListItemNode(currentIndentLevel));
+			} else {
+				break;
+			}
 		}
+
+		return unorderedListItemNodes;
+	}
+
+	getUnorderedListItemNode(currentIndentLevel) {
+		this.eat(TOKENS.unorderedListMarker);
+
+		const listItemNode = {
+			type: TREE_NODE_TYPES.listItem,
+			text: this.getTextNodes(),
+		};
+
+		if (this.lookahead && this.lookahead.type == TOKENS.listItemSeparator.type) {
+			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
+
+			if (nextIndentLevel > currentIndentLevel) {
+				this.eat(TOKENS.listItemSeparator);
+				listItemNode.list = this.getUnorderedListNode(nextIndentLevel);
+			}
+		}
+
+		return listItemNode;
+	}
+
+	getNextIndentLevel(listItemSeparatorToken) {
+		return listItemSeparatorToken.value.substring(1).length;
+	}
+
+	getOrderedListNode(currentIndentLevel) {
+		return {
+			items: this.getOrderedListItemNodes(currentIndentLevel),
+		}
+	}
+
+	getOrderedListItemNodes(currentIndentLevel) {
+		const orderedListItemNodes = [];
+
+		orderedListItemNodes.push(this.getOrderedListItemNode(currentIndentLevel)); // ordered list should have at least one item
+		while (this.lookahead && this.lookahead.type !== TOKENS.rootBlockSeparator.type) {
+			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
+
+			if (nextIndentLevel == currentIndentLevel) {
+				this.eat(TOKENS.listItemSeparator);
+				orderedListItemNodes.push(this.getOrderedListItemNode(currentIndentLevel));	
+			} else {
+				break;
+			}			
+		}
+
+		return orderedListItemNodes;
+	}
+
+	getOrderedListItemNode(currentIndentLevel) {
+		this.eat(TOKENS.orderedListMarker);
+
+		const listItemNode = {
+			type: TREE_NODE_TYPES.listItem,
+			text: this.getTextNodes(),
+		};
+
+		if (this.lookahead && this.lookahead.type == TOKENS.listItemSeparator.type) {
+			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
+
+			if (nextIndentLevel > currentIndentLevel) {
+				this.eat(TOKENS.listItemSeparator);
+				listItemNode.list = this.getOrderedListNode(nextIndentLevel);
+			}
+		}
+
+		return listItemNode;
 	}
 
 	getHorizontalRuleNode() {
@@ -111,11 +195,17 @@ class Parser {
 		}
 	}
 
+	getParagraphNode() {
+		return {
+			type: TREE_NODE_TYPES.paragraph,
+			text: this.getTextNodes(),
+		};
+	}
+
 	getImageNode() {
 		this.eat(TOKENS.leftImageMarker)
 		const imageNode = {
-			type: 'image',
-			path: this.eat(TOKENS.imagePath),
+			path: this.eat(TOKENS.imagePath).value,
 		}
 		this.eat(TOKENS.rightImageMarker);
 
@@ -125,41 +215,45 @@ class Parser {
 	getTextNodes() {
 		const textNodes = [];
 
-		while (this.lookahead !== TOKENS.rootBlockSeparator.type) {
+		while (this.lookahead && this.lookahead.type !== TOKENS.rootBlockSeparator.type && this.lookahead.type !== TOKENS.listItemSeparator.type && !this.isClosingStyledTextMarker(this.lookahead)) {
 			switch (this.lookahead.type) {
-				case TOKENS.leftBoldTextMarker:
+				case TOKENS.leftBoldTextMarker.type:
 					textNodes.push(this.getBoldTextNode());
 					break;
-				case TOKENS.leftItalicTextMarker:
+				case TOKENS.leftItalicTextMarker.type:
 					textNodes.push(this.getItalicTextNode());
 					break;
-				case TOKENS.leftUnderlinedTextMarker:
+				case TOKENS.leftUnderlinedTextMarker.type:
 					textNodes.push(this.getUnderlinedTextNode());
 					break;
-				case TOKENS.leftHighlightedTextMarker:
+				case TOKENS.leftHighlightedTextMarker.type:
 					textNodes.push(this.getHighlightedTextNode());
 					break;
-				case TOKENS.leftStrikethroughTextMarker:
+				case TOKENS.leftStrikethroughTextMarker.type:
 					textNodes.push(this.getStrikethroughTextNode());
 					break;
-				case TOKENS.linkAliasMarker1:
+				case TOKENS.linkAliasMarker1.type:
 					textNodes.push(this.getLinkAliasNode());
 					break;
-				case TOKENS.autoLink:
-					textNodes.push(this.getAutoLinkNode());
+				case TOKENS.autoLink.type:
 					break;
-				case TOKENS.leftImageMarker:
+				case TOKENS.leftImageMarker.type:
 					textNodes.push(this.getImageNode());
 					break;
 				default:
 					textNodes.push({
-						type: 'unmarked text',
-						value: this.eat(TOKENS.unmarkedText),
+						value: this.eat(TOKENS.unmarkedText).value,
 					});
 			}
 		}
 
 		return textNodes;
+	}
+
+	isClosingStyledTextMarker(lookahead) {
+		const closingStyledTextMarkers = [TOKENS.rightBoldTextMarker, TOKENS.rightItalicTextMarker, TOKENS.rightUnderlinedTextMarker, TOKENS.rightHighlightedTextMarker, TOKENS.rightStrikethroughTextMarker];
+
+		return closingStyledTextMarkers.find(closingMarker => lookahead.type == closingMarker.type);
 	}
 
 	getBoldTextNode() {
@@ -222,9 +316,9 @@ class Parser {
 		linkAliasNode = {
 			type: 'link alias'
 		}
-		linkAliasNode.title = this.eat(TOKENS.linkAliasTitle);
+		linkAliasNode.title = this.eat(TOKENS.linkAliasTitle).value;
 		this.eat(TOKENS.linkAliasMarker2);
-		linkAliasNode.url = this.eat(TOKENS.linkAliasUrl);
+		linkAliasNode.url = this.eat(TOKENS.linkAliasUrl).value;
 		this.eat(TOKENS.linkAliasMarker3);
 		
 		return linkAliasNode;
@@ -232,8 +326,7 @@ class Parser {
 
 	getAutoLinkNode() {
 		return {
-			type: 'auto link',
-			url: this.eat(TOKENS.autoLink)
+			url: this.eat(TOKENS.autoLink).value
 		}
 	}
 
