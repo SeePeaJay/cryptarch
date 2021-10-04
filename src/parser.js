@@ -17,37 +17,38 @@ class Parser {
 	getEngramNode() {
 		return {
 			type: TREE_NODE_TYPES.engram,
+			blocks: this.getRootBlockNodes(),
 		}
 	}
 
-	getBlockNodes() {
-		const blockNodes = [];
+	getRootBlockNodes() {
+		const rootBlockNodes = [];
 
 		while (this.lookahead) {
 			switch (this.lookahead.type) {
 				case TOKENS.titleMarker.type:
-					blockNodes.push(this.getTitleNode());
+					rootBlockNodes.push(this.getTitleNode());
 					break;
 				case TOKENS.level1SubtitleMarker.type:
-					blockNodes.push(this.getLevel1SubtitleNode());
+					rootBlockNodes.push(this.getLevel1SubtitleNode());
 					break;
 				case TOKENS.level2SubtitleMarker.type:
-					blockNodes.push(this.getLevel2SubtitleNode());
+					rootBlockNodes.push(this.getLevel2SubtitleNode());
 					break;
 				case TOKENS.level3SubtitleMarker.type:
-					blockNodes.push(this.getLevel3SubtitleNode());
+					rootBlockNodes.push(this.getLevel3SubtitleNode());
 					break;
 				case TOKENS.unorderedListMarker.type:
-					blockNodes.push(this.getUnorderedListNode());
+					rootBlockNodes.push(this.getUnorderedListNode(0));
 					break;
 				case TOKENS.orderedListMarker.type:
-					blockNodes.push(this.getOrderedListNode());
+					rootBlockNodes.push(this.getOrderedListNode(0));
 					break;
 				case TOKENS.horizontalRule.type:
-					blockNodes.push(this.getHorizontalRuleNode());
+					rootBlockNodes.push(this.getHorizontalRuleNode());
 					break;
 				case TOKENS.leftImageMarker.type:
-					blockNodes.push(this.getImageNode());
+					rootBlockNodes.push(this.getImageNode());
 					break;
 				case TOKENS.rootBlockSeparator.type:
 					this.eat(TOKENS.rootBlockSeparator);
@@ -55,7 +56,6 @@ class Parser {
 				default: // should be a paragraph at this point
 					rootBlockNodes.push(this.getParagraphNode());
 			}
-			// ...
 		}
 
 		return rootBlockNodes;
