@@ -154,4 +154,29 @@ const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES? TOKEN_TEMPL
 }
 // I guess we can create a Token type in the future? And we could create custom token templates here.
 
-module.exports = { RULES, TOKENS };
+const TREE_NODE_TYPES = {
+	engram: 'engram',
+
+	title: 'title',
+	level1Subtitle: 'level 1 subtitle',
+	level2Subtitle: 'level 2 subtitle',
+	level3Subtitle: 'level 3 subtitle',
+	unorderedList: 'unordered list',
+	orderedList: 'ordered list',
+	listItem: 'list item',
+	horizontalRule: 'horizontal rule',
+	paragraph: 'paragraph',
+
+	image: 'image',
+
+	boldText: 'bold text',
+	italicText: 'italic text',
+	underlinedText: 'underlined text',
+	highlightedText: 'highlighted text',
+	strikethroughText: 'strikethrough text',
+	linkAlias: 'link alias',
+	autolink: 'autolink',
+	unmarkedText: 'unmarked text',
+};
+
+module.exports = { RULES, TOKENS, TREE_NODE_TYPES };

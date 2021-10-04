@@ -1,5 +1,5 @@
-const { TOKENS } = require('./constants');
-const Lexer = require('./lexer')
+const Lexer = require('./lexer');
+const { TOKENS, TREE_NODE_TYPES } = require('./constants');
 
 class Parser {
 	constructor() {
@@ -8,7 +8,7 @@ class Parser {
     }
 
 	parse(engram) {
-		this.lexer.scan(engram) // or this.lexer.scan(engram)
+		this.lexer.scan(engram);
 		this.lookahead = this.lexer.getNextToken();
 		const tree = this.getEngramNode();
 		return tree;
@@ -16,8 +16,7 @@ class Parser {
 
 	getEngramNode() {
 		return {
-			type: 'engram',
-			blocks: this.getBlockNodes(),
+			type: TREE_NODE_TYPES.engram,
 		}
 	}
 
@@ -65,7 +64,7 @@ class Parser {
 	getTitleNode() {
 		this.eat(TOKENS.titleMarker);
 		return {
-			type: 'title',
+			type: TREE_NODE_TYPES.title,
 			text: this.getTextNodes(),
 		}
 	}
@@ -73,15 +72,15 @@ class Parser {
 	getLevel1SubtitleNode() {
 		this.eat(TOKENS.level1SubtitleMarker);
 		return {
-			type: 'level 1 subtitle',
+			type: TREE_NODE_TYPES.level1Subtitle,
 			text: this.getTextNodes(),
 		}
 	}
 
-	getLevel1SubtitleNode() {
+	getLevel2SubtitleNode() {
 		this.eat(TOKENS.level2SubtitleMarker);
 		return {
-			type: 'level 2 subtitle',
+			type: TREE_NODE_TYPES.level2Subtitle,
 			text: this.getTextNodes(),
 		}
 	}
@@ -89,7 +88,7 @@ class Parser {
 	getLevel3SubtitleNode() {
 		this.eat(TOKENS.level3SubtitleMarker);
 		return {
-			type: 'level 3 subtitle',
+			type: TREE_NODE_TYPES.level3Subtitle,
 			text: this.getTextNodes(),
 		}
 	}
@@ -145,6 +144,7 @@ class Parser {
 
 	getOrderedListNode(currentIndentLevel) {
 		return {
+			type: TREE_NODE_TYPES.orderedList,
 			items: this.getOrderedListItemNodes(currentIndentLevel),
 		}
 	}
@@ -190,8 +190,7 @@ class Parser {
 	getHorizontalRuleNode() {
 		this.eat(TOKENS.horizontalRule);
 		return {
-			type: 'horizontal rule',
-			text: this.getTextNodes(),
+			type: TREE_NODE_TYPES.horizontalRule,
 		}
 	}
 
@@ -205,6 +204,7 @@ class Parser {
 	getImageNode() {
 		this.eat(TOKENS.leftImageMarker)
 		const imageNode = {
+			type: TREE_NODE_TYPES.image,
 			path: this.eat(TOKENS.imagePath).value,
 		}
 		this.eat(TOKENS.rightImageMarker);
@@ -242,6 +242,7 @@ class Parser {
 					break;
 				default:
 					textNodes.push({
+						type: TREE_NODE_TYPES.unmarkedText,
 						value: this.eat(TOKENS.unmarkedText).value,
 					});
 			}
@@ -257,12 +258,12 @@ class Parser {
 	}
 
 	getBoldTextNode() {
-		this.eat(TOKENS.leftBoldTextMarker) // eat the left bold text marker
+		this.eat(TOKENS.leftBoldTextMarker)
 		const boldTextNode = {
-			type: 'bold text',
+			type: TREE_NODE_TYPES.boldText,
 			text: this.getTextNodes(), // add constraints somehow? or has lexer already taken care of it?
 		}
-		this.eat(TOKENS.rightBoldTextMarker) // eat the right bold text marker?
+		this.eat(TOKENS.rightBoldTextMarker)
 
 		return boldTextNode;
 	}
@@ -270,7 +271,7 @@ class Parser {
 	getItalicTextNode() {
 		this.eat(TOKENS.leftItalicTextMarker)
 		const italicTextNode = {
-			type: 'italic text',
+			type: TREE_NODE_TYPES.italicText,
 			text: this.getTextNodes(),
 		}
 		this.eat(TOKENS.rightItalicTextMarker)
@@ -281,7 +282,7 @@ class Parser {
 	getUnderlinedTextNode() {
 		this.eat(TOKENS.leftUnderlinedTextMarker)
 		const underlinedTextNode = {
-			type: 'underlined text',
+			type: TREE_NODE_TYPES.underlinedText,
 			text: this.getTextNodes(),
 		}
 		this.eat(TOKENS.rightUnderlinedTextMarker)
@@ -292,7 +293,7 @@ class Parser {
 	getHighlightedTextNode() {
 		this.eat(TOKENS.leftHighlightedTextMarker)
 		const underlinedTextNode = {
-			type: 'highlighted text',
+			type: TREE_NODE_TYPES.highlightedText,
 			text: this.getTextNodes(),
 		}
 		this.eat(TOKENS.rightHighlightedTextMarker)
@@ -303,7 +304,7 @@ class Parser {
 	getStrikethroughTextNode() {
 		this.eat(TOKENS.leftStrikethroughTextMarker)
 		const underlinedTextNode = {
-			type: 'highlighted text',
+			type: TREE_NODE_TYPES.strikethroughText,
 			text: this.getTextNodes(),
 		}
 		this.eat(TOKENS.rightStrikethroughTextMarker)
@@ -313,8 +314,8 @@ class Parser {
 
 	getLinkAliasNode() {
 		this.eat(TOKENS.linkAliasMarker1);
-		linkAliasNode = {
-			type: 'link alias'
+		const linkAliasNode = {
+			type: TREE_NODE_TYPES.linkAlias
 		}
 		linkAliasNode.title = this.eat(TOKENS.linkAliasTitle).value;
 		this.eat(TOKENS.linkAliasMarker2);
@@ -324,9 +325,9 @@ class Parser {
 		return linkAliasNode;
 	}
 
-	getAutoLinkNode() {
+	getAutolinkNode() {
 		return {
-			url: this.eat(TOKENS.autoLink).value
+			type: TREE_NODE_TYPES.autolink,
 		}
 	}
 
