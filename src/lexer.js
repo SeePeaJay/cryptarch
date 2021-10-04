@@ -226,9 +226,9 @@ class Lexer {
 				tokens.push(...this.getTokensFromLinkAlias(inlineElement));
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.image.source}$`))) {
 				tokens.push(...this.getTokensFromImage(inlineElement));
-			} else { // inlineElement must be an autoLink at this point
+			} else { // inlineElement must be an autolink at this point
 				tokens.push({
-					type: TOKENS.autoLink.type,
+					type: TOKENS.autolink.type,
 					value: inlineElement,
 				});
 			}
@@ -243,7 +243,7 @@ class Lexer {
 
 	getInlinePattern() {
 		const allInlinePatterns = [RULES.inline.boldText, RULES.inline.italicText, RULES.inline.			
-			underlinedText, RULES.inline.highlightedText, RULES.inline.strikethroughText, RULES.inline.linkAlias, RULES.inline.autoLink, RULES.inline.image];
+			underlinedText, RULES.inline.highlightedText, RULES.inline.strikethroughText, RULES.inline.linkAlias, RULES.inline.autolink, RULES.inline.image];
 
 		let inlinePatternString = '';
 		for (const inlinePattern of allInlinePatterns) {

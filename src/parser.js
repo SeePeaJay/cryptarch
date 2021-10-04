@@ -235,7 +235,8 @@ class Parser {
 				case TOKENS.linkAliasMarker1.type:
 					textNodes.push(this.getLinkAliasNode());
 					break;
-				case TOKENS.autoLink.type:
+				case TOKENS.autolink.type:
+					textNodes.push(this.getAutolinkNode());
 					break;
 				case TOKENS.leftImageMarker.type:
 					textNodes.push(this.getImageNode());
@@ -328,6 +329,7 @@ class Parser {
 	getAutolinkNode() {
 		return {
 			type: TREE_NODE_TYPES.autolink,
+			url: this.eat(TOKENS.autolink).value
 		}
 	}
 
