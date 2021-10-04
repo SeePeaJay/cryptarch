@@ -40,9 +40,10 @@ class Lexer {
 
 		let maxIndentLevel = 1; // can only be 1 by the moment the first list separator is reached
 		for (let i = 1; i < listItemsAndListItemSeparators.length; i += 2) {
-			listItemsAndListItemSeparators[i] = `\n${'\t'.repeat(maxIndentLevel)}`;
+			const tabCount = listItemsAndListItemSeparators[i].substring(1).length; // substring excludes \n
 
-			const tabCount = listItemsAndListItemSeparators[i].substring(1).length; // substring excludes \n			
+			listItemsAndListItemSeparators[i] = `\n${'\t'.repeat(Math.min(tabCount, maxIndentLevel))}`;
+
 			if (tabCount > maxIndentLevel) {
 				maxIndentLevel ++;
 			} else if (tabCount == maxIndentLevel) {
