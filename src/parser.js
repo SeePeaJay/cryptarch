@@ -331,23 +331,22 @@ class Parser {
 	}
 
 	eat(token) {
-		const currentLookahead = this.lookahead
-
-		if (currentLookahead == null) {
+		if (this.lookahead == null) {
 			throw new SyntaxError(
 				`Unexpected end of input, expected "${token.type}"`
 			);
 		} 
 
-		if (currentLookahead.type !== token.type) {
+		if (this.lookahead.type !== token.type) {
 			throw new SyntaxError(
-				`Unexpected token: "${currentLookahead.type}", expected; "${token.type}"`
+				`Unexpected token: "${this.lookahead.type}", expected; "${token.type}"`
 			)
 		}
 
+		const consumedToken = this.lookahead;
 		this.lookahead = this.lexer.getNextToken();
 
-		return currentLookahead;
+		return consumedToken;
 	}
 }
 
