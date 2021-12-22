@@ -188,14 +188,15 @@ class Lexer {
 					TOKENS.rightBoldTextMarker,
 				);		
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.italicText.source}$`))) {
-				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftItalicTextMarker, '').replace
-					(RULES.marker.rightItalicTextMarker, '');
+				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftItalicTextMarker, '').replace(RULES.marker.rightItalicTextMarker, '');
 				
 				tokens.push(
 					TOKENS.leftItalicTextMarker, 
 					...this.getTokensFromText(textWithinCurrentElement), 
 					TOKENS.rightItalicTextMarker,
 				);
+			} else if (inlineElement.match(new RegExp(`^${RULES.inline.linkAlias.source}$`))) { // need to be before underlined text to prevent underlined segment for now
+				tokens.push(...this.getTokensFromLinkAlias(inlineElement));
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.underlinedText.source}$`))) {
 				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftUnderlinedTextMarker, '').	
 					replace(RULES.marker.rightUnderlinedTextMarker, '');
@@ -222,8 +223,6 @@ class Lexer {
 					...this.getTokensFromText(textWithinCurrentElement), 
 					TOKENS.rightStrikethroughTextMarker,
 				);
-			} else if (inlineElement.match(new RegExp(`^${RULES.inline.linkAlias.source}$`))) {
-				tokens.push(...this.getTokensFromLinkAlias(inlineElement));
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.image.source}$`))) {
 				tokens.push(...this.getTokensFromImage(inlineElement));
 			} else { // inlineElement must be an autolink at this point
@@ -242,8 +241,10 @@ class Lexer {
 	}
 
 	getInlinePattern() {
-		const allInlinePatterns = [RULES.inline.boldText, RULES.inline.italicText, RULES.inline.			
-			underlinedText, RULES.inline.highlightedText, RULES.inline.strikethroughText, RULES.inline.linkAlias, RULES.inline.autolink, RULES.inline.image];
+		const allInlinePatterns = [
+			RULES.inline.boldText, RULES.inline.italicText, RULES.inline.linkAlias, RULES.inline.
+			underlinedText, RULES.inline.highlightedText, RULES.inline.strikethroughText, RULES.inline.autolink, RULES.inline.image
+		];
 
 		let inlinePatternString = '';
 		for (const inlinePattern of allInlinePatterns) {
