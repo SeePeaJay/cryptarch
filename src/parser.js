@@ -4,7 +4,7 @@ const { TOKENS, TREE_NODE_TYPES } = require('./constants');
 class Parser {
 	constructor() {
 		this.lexer = new Lexer();
-		this.lookahead;
+		this.lookahead = null;
     }
 
 	parse(engram) {
@@ -18,7 +18,7 @@ class Parser {
 		return {
 			type: TREE_NODE_TYPES.engram,
 			blocks: this.getRootBlockNodes(),
-		}
+		};
 	}
 
 	getRootBlockNodes() {
@@ -66,7 +66,7 @@ class Parser {
 		return {
 			type: TREE_NODE_TYPES.title,
 			text: this.getTextNodes(),
-		}
+		};
 	}
 
 	getLevel1SubtitleNode() {
@@ -74,7 +74,7 @@ class Parser {
 		return {
 			type: TREE_NODE_TYPES.level1Subtitle,
 			text: this.getTextNodes(),
-		}
+		};
 	}
 
 	getLevel2SubtitleNode() {
@@ -82,7 +82,7 @@ class Parser {
 		return {
 			type: TREE_NODE_TYPES.level2Subtitle,
 			text: this.getTextNodes(),
-		}
+		};
 	}
 
 	getLevel3SubtitleNode() {
@@ -90,14 +90,14 @@ class Parser {
 		return {
 			type: TREE_NODE_TYPES.level3Subtitle,
 			text: this.getTextNodes(),
-		}
+		};
 	}
 
 	getUnorderedListNode(currentIndentLevel) {
 		return {
 			type: TREE_NODE_TYPES.unorderedList,
 			items: this.getUnorderedListItemNodes(currentIndentLevel),
-		}
+		};
 	}
 
 	getUnorderedListItemNodes(currentIndentLevel) {
@@ -107,7 +107,7 @@ class Parser {
 		while (this.lookahead && this.lookahead.type !== TOKENS.rootBlockSeparator.type) {
 			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
 
-			if (nextIndentLevel == currentIndentLevel) {
+			if (nextIndentLevel === currentIndentLevel) {
 				this.eat(TOKENS.listItemSeparator);
 				unorderedListItemNodes.push(this.getUnorderedListItemNode(currentIndentLevel));
 			} else {
@@ -126,7 +126,7 @@ class Parser {
 			text: this.getTextNodes(),
 		};
 
-		if (this.lookahead && this.lookahead.type == TOKENS.listItemSeparator.type) {
+		if (this.lookahead && this.lookahead.type === TOKENS.listItemSeparator.type) {
 			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
 
 			if (nextIndentLevel > currentIndentLevel) {
@@ -146,7 +146,7 @@ class Parser {
 		return {
 			type: TREE_NODE_TYPES.orderedList,
 			items: this.getOrderedListItemNodes(currentIndentLevel),
-		}
+		};
 	}
 
 	getOrderedListItemNodes(currentIndentLevel) {
@@ -156,12 +156,12 @@ class Parser {
 		while (this.lookahead && this.lookahead.type !== TOKENS.rootBlockSeparator.type) {
 			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
 
-			if (nextIndentLevel == currentIndentLevel) {
+			if (nextIndentLevel === currentIndentLevel) {
 				this.eat(TOKENS.listItemSeparator);
-				orderedListItemNodes.push(this.getOrderedListItemNode(currentIndentLevel));	
+				orderedListItemNodes.push(this.getOrderedListItemNode(currentIndentLevel));
 			} else {
 				break;
-			}			
+			}
 		}
 
 		return orderedListItemNodes;
@@ -175,7 +175,7 @@ class Parser {
 			text: this.getTextNodes(),
 		};
 
-		if (this.lookahead && this.lookahead.type == TOKENS.listItemSeparator.type) {
+		if (this.lookahead && this.lookahead.type === TOKENS.listItemSeparator.type) {
 			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
 
 			if (nextIndentLevel > currentIndentLevel) {
@@ -191,7 +191,7 @@ class Parser {
 		this.eat(TOKENS.horizontalRule);
 		return {
 			type: TREE_NODE_TYPES.horizontalRule,
-		}
+		};
 	}
 
 	getParagraphNode() {
@@ -202,11 +202,11 @@ class Parser {
 	}
 
 	getImageNode() {
-		this.eat(TOKENS.leftImageMarker)
+		this.eat(TOKENS.leftImageMarker);
 		const imageNode = {
 			type: TREE_NODE_TYPES.image,
 			path: this.eat(TOKENS.imagePath).value,
-		}
+		};
 		this.eat(TOKENS.rightImageMarker);
 
 		return imageNode;
@@ -255,60 +255,60 @@ class Parser {
 	isClosingStyledTextMarker(lookahead) {
 		const closingStyledTextMarkers = [TOKENS.rightBoldTextMarker, TOKENS.rightItalicTextMarker, TOKENS.rightUnderlinedTextMarker, TOKENS.rightHighlightedTextMarker, TOKENS.rightStrikethroughTextMarker];
 
-		return closingStyledTextMarkers.find(closingMarker => lookahead.type == closingMarker.type);
+		return closingStyledTextMarkers.find((closingMarker) => lookahead.type === closingMarker.type);
 	}
 
 	getBoldTextNode() {
-		this.eat(TOKENS.leftBoldTextMarker)
+		this.eat(TOKENS.leftBoldTextMarker);
 		const boldTextNode = {
 			type: TREE_NODE_TYPES.boldText,
 			text: this.getTextNodes(), // add constraints somehow? or has lexer already taken care of it?
-		}
-		this.eat(TOKENS.rightBoldTextMarker)
+		};
+		this.eat(TOKENS.rightBoldTextMarker);
 
 		return boldTextNode;
 	}
 
 	getItalicTextNode() {
-		this.eat(TOKENS.leftItalicTextMarker)
+		this.eat(TOKENS.leftItalicTextMarker);
 		const italicTextNode = {
 			type: TREE_NODE_TYPES.italicText,
 			text: this.getTextNodes(),
-		}
-		this.eat(TOKENS.rightItalicTextMarker)
+		};
+		this.eat(TOKENS.rightItalicTextMarker);
 
 		return italicTextNode;
 	}
 
 	getUnderlinedTextNode() {
-		this.eat(TOKENS.leftUnderlinedTextMarker)
+		this.eat(TOKENS.leftUnderlinedTextMarker);
 		const underlinedTextNode = {
 			type: TREE_NODE_TYPES.underlinedText,
 			text: this.getTextNodes(),
-		}
-		this.eat(TOKENS.rightUnderlinedTextMarker)
+		};
+		this.eat(TOKENS.rightUnderlinedTextMarker);
 
 		return underlinedTextNode;
 	}
 
 	getHighlightedTextNode() {
-		this.eat(TOKENS.leftHighlightedTextMarker)
+		this.eat(TOKENS.leftHighlightedTextMarker);
 		const underlinedTextNode = {
 			type: TREE_NODE_TYPES.highlightedText,
 			text: this.getTextNodes(),
-		}
-		this.eat(TOKENS.rightHighlightedTextMarker)
+		};
+		this.eat(TOKENS.rightHighlightedTextMarker);
 
 		return underlinedTextNode;
 	}
 
 	getStrikethroughTextNode() {
-		this.eat(TOKENS.leftStrikethroughTextMarker)
+		this.eat(TOKENS.leftStrikethroughTextMarker);
 		const underlinedTextNode = {
 			type: TREE_NODE_TYPES.strikethroughText,
 			text: this.getTextNodes(),
-		}
-		this.eat(TOKENS.rightStrikethroughTextMarker)
+		};
+		this.eat(TOKENS.rightStrikethroughTextMarker);
 
 		return underlinedTextNode;
 	}
@@ -316,34 +316,34 @@ class Parser {
 	getLinkAliasNode() {
 		this.eat(TOKENS.linkAliasMarker1);
 		const linkAliasNode = {
-			type: TREE_NODE_TYPES.linkAlias
-		}
+			type: TREE_NODE_TYPES.linkAlias,
+		};
 		linkAliasNode.title = this.eat(TOKENS.linkAliasTitle).value;
 		this.eat(TOKENS.linkAliasMarker2);
 		linkAliasNode.url = this.eat(TOKENS.linkAliasUrl).value;
 		this.eat(TOKENS.linkAliasMarker3);
-		
+
 		return linkAliasNode;
 	}
 
 	getAutolinkNode() {
 		return {
 			type: TREE_NODE_TYPES.autolink,
-			url: this.eat(TOKENS.autolink).value
-		}
+			url: this.eat(TOKENS.autolink).value,
+		};
 	}
 
 	eat(token) {
 		if (this.lookahead == null) {
 			throw new SyntaxError(
-				`Unexpected end of input, expected "${token.type}"`
+				`Unexpected end of input, expected "${token.type}"`,
 			);
-		} 
+		}
 
 		if (this.lookahead.type !== token.type) {
 			throw new SyntaxError(
-				`Unexpected token: "${this.lookahead.type}", expected; "${token.type}"`
-			)
+				`Unexpected token: "${this.lookahead.type}", expected; "${token.type}"`,
+			);
 		}
 
 		const consumedToken = this.lookahead;

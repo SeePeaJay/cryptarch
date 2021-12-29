@@ -1,4 +1,4 @@
-const { RULES, TOKENS } = require('./constants')
+const { RULES, TOKENS } = require('./constants');
 
 class Lexer {
 	constructor() {
@@ -15,9 +15,9 @@ class Lexer {
 	}
 
 	getBlocksAndBlockSeparators(rootBlocks) {
-		let blocksAndBlockSeparators = [...rootBlocks];
+		const blocksAndBlockSeparators = [...rootBlocks];
 
-		for(let i = 0; i < 2 * (rootBlocks.length - 1); i += 2) { // insert root block separators
+		for (let i = 0; i < 2 * (rootBlocks.length - 1); i += 2) { // insert root block separators
 			blocksAndBlockSeparators.splice(i + 1, 0, '\n\n');
 		}
 
@@ -25,18 +25,18 @@ class Lexer {
 		for (let i = 0; i < blocksAndBlockSeparators.length; i += 2) { // insert list-related stuff
 			if (blocksAndBlockSeparators[i].match(listPattern)) {
 				blocksAndBlockSeparators.splice(
-					i, 1, ...this.getListItemsAndListItemSeparators(blocksAndBlockSeparators[i])
+					i, 1, ...this.getListItemsAndListItemSeparators(blocksAndBlockSeparators[i]),
 				);
 			}
 		}
-		
+
 		return blocksAndBlockSeparators;
 	}
 
 	getListItemsAndListItemSeparators(list) { // should be able to clean up SAfterListItemSeparatorAndBeforeList
 		const listItemsAndListItemSeparators = list.split(
-			new RegExp(`(${RULES.listItemSeparator.source})`, 'g') // parentheses to include delimiter in result
-		); 
+			new RegExp(`(${RULES.listItemSeparator.source})`, 'g'), // parentheses to include delimiter in result
+		);
 
 		let maxIndentLevel = 1; // can only be 1 by the moment the first list separator is reached
 		for (let i = 1; i < listItemsAndListItemSeparators.length; i += 2) {
@@ -46,7 +46,7 @@ class Lexer {
 
 			if (tabCount > maxIndentLevel) {
 				maxIndentLevel ++;
-			} else if (tabCount == maxIndentLevel) {
+			} else if (tabCount === maxIndentLevel) {
 				maxIndentLevel ++;
 			} else {
 				maxIndentLevel = tabCount + 1;
@@ -72,13 +72,13 @@ class Lexer {
 		}
 
 		this.tokenQueue.push(...this.getTokensFromCurrentCursor());
-		this.cursor ++;
+		this.cursor += 1;
 		return this.tokenQueue.shift();
 	}
 
 	cursorCannotAdvance() {
-		return (this.blocksAndBlockSeparators.length == 1 && this.blocksAndBlockSeparators[0] == '') || 
-			(this.cursor >= this.blocksAndBlockSeparators.length && this.tokenQueue.length == 0);
+		return (this.blocksAndBlockSeparators.length === 1 && this.blocksAndBlockSeparators[0] === '')
+		|| (this.cursor >= this.blocksAndBlockSeparators.length && this.tokenQueue.length === 0);
 	}
 
 	getTokensFromCurrentCursor() {
@@ -90,13 +90,13 @@ class Lexer {
 			}
 
 			return [ // must be list item separator
-				{ 
+				{
 					type: TOKENS.listItemSeparator.type,
 					value: this.blocksAndBlockSeparators[this.cursor],
-				}
-			]; 
+				},
+			];
 		}
-		
+
 		// cursor must be even
 		return this.getTokensFromCurrentBlock();
 	}
@@ -129,9 +129,9 @@ class Lexer {
 			return [
 				{
 					type: TOKENS.orderedListMarker.type,
-					value: currentBlock.match(RULES.marker.orderedListMarker)[0]
-				}, 
-				...this.getTokensFromText(text)
+					value: currentBlock.match(RULES.marker.orderedListMarker)[0],
+				},
+				...this.getTokensFromText(text),
 			];
 		}
 		if (currentBlock.match(RULES.block.horizontalRule)) {
@@ -149,12 +149,12 @@ class Lexer {
 		const imagePath = image.replace(RULES.marker.leftImageMarker, '').replace(RULES.marker.rightImageMarker, 		'');
 
 		return [
-			TOKENS.leftImageMarker, 
+			TOKENS.leftImageMarker,
 			{
 				type: TOKENS.imagePath.type,
-				value: imagePath
-			}, 
-			TOKENS.rightImageMarker
+				value: imagePath,
+			},
+			TOKENS.rightImageMarker,
 		];
 	}
 
@@ -180,47 +180,45 @@ class Lexer {
 			}
 
 			if (inlineElement.match(new RegExp(`^${RULES.inline.boldText.source}$`))) {
-				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftBoldTextMarker, '').replace		(RULES.marker.rightBoldTextMarker, '');
-				
+				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftBoldTextMarker, '').replace(RULES.marker.rightBoldTextMarker, '');
+
 				tokens.push(
-					TOKENS.leftBoldTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					TOKENS.leftBoldTextMarker,
+					...this.getTokensFromText(textWithinCurrentElement),
 					TOKENS.rightBoldTextMarker,
-				);		
+				);
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.italicText.source}$`))) {
 				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftItalicTextMarker, '').replace(RULES.marker.rightItalicTextMarker, '');
-				
+
 				tokens.push(
-					TOKENS.leftItalicTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					TOKENS.leftItalicTextMarker,
+					...this.getTokensFromText(textWithinCurrentElement),
 					TOKENS.rightItalicTextMarker,
 				);
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.linkAlias.source}$`))) { // need to be before underlined text to prevent underlined segment for now
 				tokens.push(...this.getTokensFromLinkAlias(inlineElement));
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.underlinedText.source}$`))) {
-				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftUnderlinedTextMarker, '').	
-					replace(RULES.marker.rightUnderlinedTextMarker, '');
-				
+				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftUnderlinedTextMarker, '').replace(RULES.marker.rightUnderlinedTextMarker, '');
+
 				tokens.push(
-					TOKENS.leftUnderlinedTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					TOKENS.leftUnderlinedTextMarker,
+					...this.getTokensFromText(textWithinCurrentElement),
 					TOKENS.rightUnderlinedTextMarker,
 				);
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.highlightedText.source}$`))) {
-				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftHighlightedTextMarker, '').	
-					replace(RULES.marker.rightHighlightedTextMarker, '');
-				
+				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftHighlightedTextMarker, '').replace(RULES.marker.rightHighlightedTextMarker, '');
+
 				tokens.push(
-					TOKENS.leftHighlightedTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					TOKENS.leftHighlightedTextMarker,
+					...this.getTokensFromText(textWithinCurrentElement),
 					TOKENS.rightHighlightedTextMarker,
 				);
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.strikethroughText.source}$`))) {
-				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftStrikethroughTextMarker, '').	replace(RULES.marker.rightStirkethroughTextMarker, '');
-				
+				const textWithinCurrentElement = inlineElement.replace(RULES.marker.leftStrikethroughTextMarker, '').replace(RULES.marker.rightStirkethroughTextMarker, '');
+
 				tokens.push(
-					TOKENS.leftStrikethroughTextMarker, 
-					...this.getTokensFromText(textWithinCurrentElement), 
+					TOKENS.leftStrikethroughTextMarker,
+					...this.getTokensFromText(textWithinCurrentElement),
 					TOKENS.rightStrikethroughTextMarker,
 				);
 			} else if (inlineElement.match(new RegExp(`^${RULES.inline.image.source}$`))) {
@@ -242,37 +240,35 @@ class Lexer {
 
 	getInlinePattern() {
 		const allInlinePatterns = [
-			RULES.inline.boldText, RULES.inline.italicText, RULES.inline.linkAlias, RULES.inline.
-			underlinedText, RULES.inline.highlightedText, RULES.inline.strikethroughText, RULES.inline.autolink, RULES.inline.image
+			RULES.inline.boldText, RULES.inline.italicText, RULES.inline.linkAlias, RULES.inline.underlinedText, RULES.inline.highlightedText, RULES.inline.strikethroughText, RULES.inline.autolink, RULES.inline.image,
 		];
 
 		let inlinePatternString = '';
-		for (const inlinePattern of allInlinePatterns) {
-			inlinePatternString += `(${inlinePattern.source})|`
-		}
-		inlinePatternString = inlinePatternString.slice(0, -1); 
+		allInlinePatterns.forEach((inlinePattern) => {
+			inlinePatternString += `(${inlinePattern.source})|`;
+		});
+		inlinePatternString = inlinePatternString.slice(0, -1);
 
 		return new RegExp(inlinePatternString);
 	}
 
 	getTokensFromLinkAlias(linkAlias) {
-		const linkAliasTitleAndUrl = linkAlias.replace(RULES.marker.linkAliasMarker1, '').replace(RULES.marker.
-			linkAliasMarker3, '').split(RULES.marker.linkAliasMarker2);
+		const linkAliasTitleAndUrl = linkAlias.replace(RULES.marker.linkAliasMarker1, '').replace(RULES.marker.linkAliasMarker3, '').split(RULES.marker.linkAliasMarker2);
 		const linkAliasTitle = linkAliasTitleAndUrl[0];
 		const linkAliasUrl = linkAliasTitleAndUrl[1];
-		
+
 		return [
-			TOKENS.linkAliasMarker1, 
+			TOKENS.linkAliasMarker1,
 			{
 				type: TOKENS.linkAliasTitle.type,
 				value: linkAliasTitle,
 			},
-			TOKENS.linkAliasMarker2, 
+			TOKENS.linkAliasMarker2,
 			{
 				type: TOKENS.linkAliasUrl.type,
 				value: linkAliasUrl,
 			},
-			TOKENS.linkAliasMarker3
+			TOKENS.linkAliasMarker3,
 		];
 	}
 }

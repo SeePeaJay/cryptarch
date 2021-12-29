@@ -1,4 +1,4 @@
-const Parser = require('./parser')
+const Parser = require('./parser');
 const Generator = require('./generator');
 
 class Cryptarch {
@@ -8,7 +8,7 @@ class Cryptarch {
 	}
 
 	decrypt(engram) {
-		const tree = this.parser.parse(engram)
+		const tree = this.parser.parse(engram);
 		return this.generator.toHtml(tree);
 	}
 }

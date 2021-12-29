@@ -9,7 +9,7 @@ class Generator {
 	toHtml(tree) {
 		let html = '';
 
-		for (const rootBlockNode of tree.blocks) {
+		tree.blocks.forEach((rootBlockNode) => {
 			switch (rootBlockNode.type) {
 				case TREE_NODE_TYPES.title:
 					html += this.getHtmlFromTitleNode(rootBlockNode);
@@ -38,7 +38,7 @@ class Generator {
 				default:
 					html += this.getHtmlFromParagraphNode(rootBlockNode);
 			}
-		}
+		});
 
 		return html;
 	}
@@ -66,13 +66,13 @@ class Generator {
 	getHtmlFromUnorderedListItemNodes(unorderedListItemNodes) {
 		let html = '';
 
-		for (const listItemNode of unorderedListItemNodes) {
+		unorderedListItemNodes.forEach((listItemNode) => {
 			if ('list' in listItemNode) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}${this.getHtmlFromUnorderedListNode(listItemNode.list)}</li>`;
 			} else {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}</li>`;
 			}
-		}	
+		});
 
 		return html;
 	}
@@ -84,19 +84,19 @@ class Generator {
 	getHtmlFromOrderedListItemNodes(orderedListItemNodes) {
 		let html = '';
 
-		for (const listItemNode of orderedListItemNodes) {
+		orderedListItemNodes.forEach((listItemNode) => {
 			if (listItemNode.list) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}${this.getHtmlFromOrderedListNode(listItemNode.list)}</li>`;
 			} else {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}</li>`;
 			}
-		}	
+		});
 
 		return html;
 	}
 
 	getHtmlFromHorizontalRuleNode() {
-		return `<hr>`;
+		return '<hr>';
 	}
 
 	getHtmlFromParagraphNode(paragraphNode) {
@@ -110,7 +110,7 @@ class Generator {
 	getHtmlFromTextNodes(textNodes) {
 		let html = '';
 
-		for (const textNode of textNodes) {
+		textNodes.forEach((textNode) => {
 			switch (textNode.type) {
 				case TREE_NODE_TYPES.boldText:
 					html += this.getHtmlFromBoldTextNode(textNode);
@@ -139,9 +139,9 @@ class Generator {
 				default:
 					html += textNode.value;
 			}
-		}
+		});
 
-		return html;		
+		return html;
 	}
 
 	getHtmlFromBoldTextNode(boldTextNode) {
@@ -173,11 +173,11 @@ class Generator {
 	}
 
 	getUrlWithProtocol(url) {
-		var httpPattern = /^((http|https|ftp):\/\/)/;
+		const httpPattern = /^((http|https|ftp):\/\/)/;
 
 		let validHref = url;
-		if(!httpPattern.test(url)) {
-    		validHref = "//" + url;
+		if (!httpPattern.test(url)) {
+			validHref = `//${url}`;
 		}
 
 		return validHref;

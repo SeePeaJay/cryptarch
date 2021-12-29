@@ -46,12 +46,12 @@ const RULES = {
 		linkAliasMarker2: /_\(/,
 		linkAliasMarker3: /\)/,
 	},
-	rootBlockSeparator: /\n(?:\s|\t)*\n/, 
-		/* 
+	rootBlockSeparator: /\n(?:\s|\t)*\n/,
+		/*
 			used to match against the whole engram
 			still need non-capturing group to split properly
 		*/
-	listItemSeparator: /\n[^\S\n]*(?=(?:\d{1,9})?\. )/
+	listItemSeparator: /\n[^\S\n]*(?=(?:\d{1,9})?\. )/,
 		/*
 			This specific pattern only works when matched against a list.
 			There is a lookbehind solution: /(?<!\n)\n[^\S\n]*(?=(\d{1,9})?\. )/. However, lookbehind is not supported in all browsers.
@@ -142,7 +142,7 @@ const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES? TOKEN_TEMPL
 	},
 
 	unmarkedText: {
-		type: 'UNMARKED TEXT'
+		type: 'UNMARKED TEXT',
 	},
 
 	rootBlockSeparator: {
@@ -150,8 +150,8 @@ const TOKENS = { // perhaps split into TOKEN_TYPES and TOKEN_VALUES? TOKEN_TEMPL
 	},
 	listItemSeparator: {
 		type: 'LIST ITEM SEPARATOR',
-	}
-}
+	},
+};
 // I guess we can create a Token type in the future? And we could create custom token templates here.
 
 const TREE_NODE_TYPES = {
