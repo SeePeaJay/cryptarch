@@ -67,8 +67,10 @@ class Generator {
 		let html = '';
 
 		unorderedListItemNodes.forEach((listItemNode) => {
-			if ('list' in listItemNode) {
+			if ('list' in listItemNode && listItemNode.list.type === TREE_NODE_TYPES.unorderedList) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}${this.getHtmlFromUnorderedListNode(listItemNode.list)}</li>`;
+			} else if ('list' in listItemNode && listItemNode.list.type === TREE_NODE_TYPES.orderedList) {
+				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}${this.getHtmlFromOrderedListNode(listItemNode.list)}</li>`;
 			} else {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}</li>`;
 			}
@@ -85,8 +87,10 @@ class Generator {
 		let html = '';
 
 		orderedListItemNodes.forEach((listItemNode) => {
-			if (listItemNode.list) {
+			if ('list' in listItemNode && listItemNode.list.type === TREE_NODE_TYPES.orderedList) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}${this.getHtmlFromOrderedListNode(listItemNode.list)}</li>`;
+			} else if ('list' in listItemNode && listItemNode.list.type === TREE_NODE_TYPES.unorderedList) {
+				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}${this.getHtmlFromUnorderedListNode(listItemNode.list)}</li>`;
 			} else {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.text)}</li>`;
 			}

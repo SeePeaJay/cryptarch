@@ -5,7 +5,7 @@ class Parser {
 	constructor() {
 		this.lexer = new Lexer();
 		this.lookahead = null;
-    }
+	}
 
 	parse(engram) {
 		this.lexer.scan(engram);
@@ -103,7 +103,7 @@ class Parser {
 	getUnorderedListItemNodes(currentIndentLevel) {
 		const unorderedListItemNodes = [];
 
-		unorderedListItemNodes.push(this.getUnorderedListItemNode(currentIndentLevel)); // unordered list should have at least one item
+		unorderedListItemNodes.push(this.getUnorderedListItemNode(currentIndentLevel)); // unordered list should have at least one list item
 		while (this.lookahead && this.lookahead.type !== TOKENS.rootBlockSeparator.type) {
 			const nextIndentLevel = this.getNextIndentLevel(this.lookahead);
 
@@ -131,7 +131,12 @@ class Parser {
 
 			if (nextIndentLevel > currentIndentLevel) {
 				this.eat(TOKENS.listItemSeparator);
-				listItemNode.list = this.getUnorderedListNode(nextIndentLevel);
+
+				if (this.lookahead.type === TOKENS.unorderedListMarker.type) {
+					listItemNode.list = this.getUnorderedListNode(nextIndentLevel);
+				} else {
+					listItemNode.list = this.getOrderedListNode(nextIndentLevel);
+				}
 			}
 		}
 
@@ -180,7 +185,12 @@ class Parser {
 
 			if (nextIndentLevel > currentIndentLevel) {
 				this.eat(TOKENS.listItemSeparator);
-				listItemNode.list = this.getOrderedListNode(nextIndentLevel);
+
+				if (this.lookahead.type === TOKENS.orderedListMarker.type) {
+					listItemNode.list = this.getOrderedListNode(nextIndentLevel);
+				} else {
+					listItemNode.list = this.getUnorderedListNode(nextIndentLevel);
+				}
 			}
 		}
 
@@ -262,7 +272,7 @@ class Parser {
 		this.eat(TOKENS.leftBoldTextMarker);
 		const boldTextNode = {
 			type: TREE_NODE_TYPES.boldText,
-			text: this.getTextNodes(), // add constraints somehow? or has lexer already taken care of it?
+			text: this.getTextNodes(),
 		};
 		this.eat(TOKENS.rightBoldTextMarker);
 
