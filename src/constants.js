@@ -1,27 +1,34 @@
 const RULES = {
-	block: { // used to match against a block
-		title: /^\* (.|\n(?!\t*\n)(?!\t*$))*$/,
-		level1Subtitle: /^\*_1 (.|\n(?!\t*\n)(?!\t*$))*$/,
-		level2Subtitle: /^\*_2 (.|\n(?!\t*\n)(?!\t*$))*$/,
-		level3Subtitle: /^\*_3 (.|\n(?!\t*\n)(?!\t*$))*$/,
-		unorderedList: /^\. (.|\n(?!\t*\n)(?!\t*$))*$/,
-		orderedList: /^\d{1,9}\. (.|\n(?!\t*\n)(?!\t*$))*$/,
+	block: {
+		title: /^\* (?:.|\n(?! *\n)(?! *$))+$/,
+		level1Subtitle: /^\*_1 (?:.|\n(?! *\n)(?! *$))+$/,
+		level2Subtitle: /^\*_2 (?:.|\n(?! *\n)(?! *$))+$/,
+		level3Subtitle: /^\*_3 (?:.|\n(?! *\n)(?! *$))+$/,
+		unorderedList: /^\. (?:.|\n(?! *\n)(?! *$))+$/,
+		orderedList: /^\d{1,9}\. (?:.|\n(?! *\n)(?! *$))+$/,
 		horizontalRule: /^---[^\S\n]*$/,
 
-		image: /^\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+?{}$/,
+		image: /^\$[^{}\s]+?{}$/,
 	},
-	inline: { // used to match against text
-		boldText: /\*(?!\n@`)(?:.|\n(?!\t*\n)(?!\t*$))+?\*/,
-		italicText: /\/(?!\n\/`)(?:.|\n(?!\t*\n)(?!\t*$))+?\//,
-		underlinedText: /_(?!\n_`)(?:.|\n(?!\t*\n)(?!\t*$))+?_/,
-		highlightedText: /=(?!\n=`)(?:.|\n(?!\t*\n)(?!\t*$))+?=/,
-		strikethroughText: /-(?!\n-`)(?:.|\n(?!\t*\n)(?!\t*$))+?-/,
-		linkAlias: /_(?!\n_\()(?:.|\n(?!\t*\n)(?!\t*$))+?_\((?!\n\))(?:.|\n(?!\t*\n)(?!\t*$))+?\)/,
+		/*
+			All of the above should be used to match against a block.
+			As of this writing, tabs should not count as indent, so they are excluded from the rules for now.
+		*/
+	inline: {
+		boldText: /\*.+?\*/,
+		italicText: /\/.+?\//,
+		underlinedText: /_.+?_/,
+		highlightedText: /=.+?=/,
+		strikethroughText: /-.+?-/,
+		linkAlias: /_.+?_\(.+\)/,
 		autolink: /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/,
 
-		image: /\$(?!\n{})(.|\n(?!\t*\n)(?!\t*$))+?{}/,
+		image: /\$[^{}\s]+?{}/,
 	},
-	marker: { // used to match against each respective element
+		/*
+			All of the above should be used to match against text; tabs and spaces may count as text for now.
+		*/
+	marker: {
 		titleMarker: /^\* /,
 		level1SubtitleMarker: /^\*_1 /,
 		level2SubtitleMarker: /^\*_2 /,
@@ -46,16 +53,17 @@ const RULES = {
 		linkAliasMarker2: /_\(/,
 		linkAliasMarker3: /\)/,
 	},
-	rootBlockSeparator: /\n(?:\s|\t)*\n/,
 		/*
-			used to match against the whole engram
-			still need non-capturing group to split properly
+			All of the above should be used to match against each respective element.
 		*/
-	listItemSeparator: /\n[^\S\n]*(?=(?:\d{1,9})?\. )/,
+	rootBlockSeparator: /\n(?: |\t)*\n/,
 		/*
-			This specific pattern only works when matched against a list.
-			There is a lookbehind solution: /(?<!\n)\n[^\S\n]*(?=(\d{1,9})?\. )/. However, lookbehind is not supported in all browsers.
-			Closest attempt with lookahead: /((?!\n).|^)\n[^\S\n]*(?=(\d{1,9})?\. )/
+			This specific pattern should be used to match against the whole engram.
+		*/
+	listItemSeparator: /\n *(?=(?:\d{1,9})?\. (?! *\n| *$))/,
+		/*
+			This specific pattern should only work when matched against a list.
+			Translation: match newline w/ n spaces, as long as a proper list item follows.
 		*/
 };
 
