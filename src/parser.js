@@ -17,7 +17,7 @@ class Parser {
 	getEngramNode() {
 		return {
 			type: TREE_NODE_TYPES.engram,
-			blocks: this.getRootBlockNodes(),
+			rootBlockNodes: this.getRootBlockNodes(),
 		};
 	}
 
@@ -65,7 +65,7 @@ class Parser {
 		this.eat(TOKENS.titleMarker);
 		return {
 			type: TREE_NODE_TYPES.title,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 	}
 
@@ -73,7 +73,7 @@ class Parser {
 		this.eat(TOKENS.level1SubtitleMarker);
 		return {
 			type: TREE_NODE_TYPES.level1Subtitle,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 	}
 
@@ -81,7 +81,7 @@ class Parser {
 		this.eat(TOKENS.level2SubtitleMarker);
 		return {
 			type: TREE_NODE_TYPES.level2Subtitle,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 	}
 
@@ -89,14 +89,14 @@ class Parser {
 		this.eat(TOKENS.level3SubtitleMarker);
 		return {
 			type: TREE_NODE_TYPES.level3Subtitle,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 	}
 
 	getUnorderedListNode(currentIndentLevel) {
 		return {
 			type: TREE_NODE_TYPES.unorderedList,
-			items: this.getUnorderedListItemNodes(currentIndentLevel),
+			listItemNodes: this.getUnorderedListItemNodes(currentIndentLevel),
 		};
 	}
 
@@ -123,7 +123,7 @@ class Parser {
 
 		const listItemNode = {
 			type: TREE_NODE_TYPES.listItem,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 
 		if (this.lookahead && this.lookahead.type === TOKENS.listItemSeparator.type) {
@@ -133,9 +133,9 @@ class Parser {
 				this.eat(TOKENS.listItemSeparator);
 
 				if (this.lookahead.type === TOKENS.unorderedListMarker.type) {
-					listItemNode.list = this.getUnorderedListNode(nextIndentLevel);
+					listItemNode.listNode = this.getUnorderedListNode(nextIndentLevel);
 				} else {
-					listItemNode.list = this.getOrderedListNode(nextIndentLevel);
+					listItemNode.listNode = this.getOrderedListNode(nextIndentLevel);
 				}
 			}
 		}
@@ -150,7 +150,7 @@ class Parser {
 	getOrderedListNode(currentIndentLevel) {
 		return {
 			type: TREE_NODE_TYPES.orderedList,
-			items: this.getOrderedListItemNodes(currentIndentLevel),
+			listItemNodes: this.getOrderedListItemNodes(currentIndentLevel),
 		};
 	}
 
@@ -177,7 +177,7 @@ class Parser {
 
 		const listItemNode = {
 			type: TREE_NODE_TYPES.listItem,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 
 		if (this.lookahead && this.lookahead.type === TOKENS.listItemSeparator.type) {
@@ -187,9 +187,9 @@ class Parser {
 				this.eat(TOKENS.listItemSeparator);
 
 				if (this.lookahead.type === TOKENS.orderedListMarker.type) {
-					listItemNode.list = this.getOrderedListNode(nextIndentLevel);
+					listItemNode.listNode = this.getOrderedListNode(nextIndentLevel);
 				} else {
-					listItemNode.list = this.getUnorderedListNode(nextIndentLevel);
+					listItemNode.listNode = this.getUnorderedListNode(nextIndentLevel);
 				}
 			}
 		}
@@ -207,7 +207,7 @@ class Parser {
 	getParagraphNode() {
 		return {
 			type: TREE_NODE_TYPES.paragraph,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 	}
 
@@ -254,7 +254,7 @@ class Parser {
 				default:
 					textNodes.push({
 						type: TREE_NODE_TYPES.unmarkedText,
-						value: this.eat(TOKENS.unmarkedText).value,
+						text: this.eat(TOKENS.unmarkedText).value,
 					});
 			}
 		}
@@ -272,7 +272,7 @@ class Parser {
 		this.eat(TOKENS.leftBoldTextMarker);
 		const boldTextNode = {
 			type: TREE_NODE_TYPES.boldText,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 		this.eat(TOKENS.rightBoldTextMarker);
 
@@ -283,7 +283,7 @@ class Parser {
 		this.eat(TOKENS.leftItalicTextMarker);
 		const italicTextNode = {
 			type: TREE_NODE_TYPES.italicText,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 		this.eat(TOKENS.rightItalicTextMarker);
 
@@ -294,7 +294,7 @@ class Parser {
 		this.eat(TOKENS.leftUnderlinedTextMarker);
 		const underlinedTextNode = {
 			type: TREE_NODE_TYPES.underlinedText,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 		this.eat(TOKENS.rightUnderlinedTextMarker);
 
@@ -305,7 +305,7 @@ class Parser {
 		this.eat(TOKENS.leftHighlightedTextMarker);
 		const underlinedTextNode = {
 			type: TREE_NODE_TYPES.highlightedText,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 		this.eat(TOKENS.rightHighlightedTextMarker);
 
@@ -316,7 +316,7 @@ class Parser {
 		this.eat(TOKENS.leftStrikethroughTextMarker);
 		const underlinedTextNode = {
 			type: TREE_NODE_TYPES.strikethroughText,
-			text: this.getTextNodes(),
+			textNodes: this.getTextNodes(),
 		};
 		this.eat(TOKENS.rightStrikethroughTextMarker);
 
