@@ -11,6 +11,10 @@ class Cryptarch {
 		const tree = this.parser.parse(engram);
 		return this.generator.toHtml(tree);
 	}
+
+	getParseTree(engram) {
+		return this.parser.parse(engram);
+	}
 }
 
 module.exports = Cryptarch;
