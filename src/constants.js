@@ -15,7 +15,7 @@ const RULES = {
 			As of this writing, tabs should not count as indent, so they are excluded from the rules for now.
 		*/
 	inline: {
-		boldText: /\*\*.+?\*\*/,
+		boldText: /@@.+?@@/,
 		italicText: /\/\/.+?\/\//,
 		underlinedText: /__.+?__/,
 		highlightedText: /==.+?==/,
@@ -39,8 +39,8 @@ const RULES = {
 		leftImageMarker: /^\$/,
 		rightImageMarker: /{}$/,
 
-		leftBoldTextMarker: /^\*\*/,
-		rightBoldTextMarker: /\*\*$/,
+		leftBoldTextMarker: /^@@/,
+		rightBoldTextMarker: /@@$/,
 		leftItalicTextMarker: /^\/\//,
 		rightItalicTextMarker: /\/\/$/,
 		leftUnderlinedTextMarker: /^__/,
