@@ -67,9 +67,9 @@ class Generator {
 		let html = '';
 
 		unorderedListItemNodes.forEach((listItemNode) => {
-			if ('list' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.unorderedList) {
+			if ('listNode' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.unorderedList) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.textNodes)}${this.getHtmlFromUnorderedListNode(listItemNode.listNode)}</li>`;
-			} else if ('list' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.orderedList) {
+			} else if ('listNode' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.orderedList) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.textNodes)}${this.getHtmlFromOrderedListNode(listItemNode.listNode)}</li>`;
 			} else {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.textNodes)}</li>`;
@@ -87,9 +87,9 @@ class Generator {
 		let html = '';
 
 		orderedListItemNodes.forEach((listItemNode) => {
-			if ('list' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.orderedList) {
+			if ('listNode' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.orderedList) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.textNodes)}${this.getHtmlFromOrderedListNode(listItemNode.listNode)}</li>`;
-			} else if ('list' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.unorderedList) {
+			} else if ('listNode' in listItemNode && listItemNode.listNode.type === TREE_NODE_TYPES.unorderedList) {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.textNodes)}${this.getHtmlFromUnorderedListNode(listItemNode.listNode)}</li>`;
 			} else {
 				html += `<li>${this.getHtmlFromTextNodes(listItemNode.textNodes)}</li>`;
