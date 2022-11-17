@@ -10,7 +10,7 @@ const MARKERS = {
 	heading2: '*_2 ',
 	heading3: '*_3 ',
 	unorderedList: '. ',
-	orderedList: '\\d{1,9}\\. ', // need to escape backslash character
+	orderedList: '\\d{1,9}\\. ', // need to escape backslash character; TODO conver to regex?
 	listItemSeparator: '\n',
 	horizontalRule: '---',
 
@@ -43,33 +43,33 @@ const RULES = {
 		As of this writing, tabs should not count as indent, so they are excluded from the rules for now.
 	*/
 	block: {
-		engramLink: new RegExp(`^(${escapeRegExp(MARKERS.engramLink1)})[^\\s]+?${escapeRegExp(MARKERS.engramLink2)}[^\\n]*?${escapeRegExp(MARKERS.engramLink3)}$`),
-		image: new RegExp(`^(${escapeRegExp(MARKERS.image1)})[^\\s]+?${escapeRegExp(MARKERS.image2)}$`),
+		engramLink: new RegExp(`^${escapeRegExp(MARKERS.engramLink1)}[^\\s]+?${escapeRegExp(MARKERS.engramLink2)}[^\\n]*?${escapeRegExp(MARKERS.engramLink3)}$`),
+		image: new RegExp(`^${escapeRegExp(MARKERS.image1)}[^\\s]+?${escapeRegExp(MARKERS.image2)}$`),
 
-		title: new RegExp(`^(${escapeRegExp(MARKERS.title)})(?:.|\\n(?! *\\n)(?! *$))+$`),
-		heading1: new RegExp(`^(${escapeRegExp(MARKERS.heading1)})(?:.|\\n(?! *\\n)(?! *$))+$`),
-		heading2: new RegExp(`^(${escapeRegExp(MARKERS.heading2)})(?:.|\\n(?! *\\n)(?! *$))+$`),
-		heading3: new RegExp(`^(${escapeRegExp(MARKERS.heading3)})(?:.|\\n(?! *\\n)(?! *$))+$`),
-		unorderedList: new RegExp(`^(${escapeRegExp(MARKERS.unorderedList)})(?:.|\\n(?! *\\n)(?! *$))+$`),
-		orderedList: new RegExp(`^(${MARKERS.orderedList})(?:.|\\n(?! *\\n)(?! *$))+$`),
-		horizontalRule: new RegExp(`^(${escapeRegExp(MARKERS.horizontalRule)})[^\\S\\n]*$`),
+		title: new RegExp(`^${escapeRegExp(MARKERS.title)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		heading1: new RegExp(`^${escapeRegExp(MARKERS.heading1)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		heading2: new RegExp(`^${escapeRegExp(MARKERS.heading2)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		heading3: new RegExp(`^${escapeRegExp(MARKERS.heading3)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		unorderedList: new RegExp(`^${escapeRegExp(MARKERS.unorderedList)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		orderedList: new RegExp(`^${MARKERS.orderedList}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		horizontalRule: new RegExp(`^${escapeRegExp(MARKERS.horizontalRule)}[^\\S\\n]*$`),
 	},
 
 	/*
 		Inline rules are designed to match against text; tabs and spaces may count as text for now.
 	*/
 	inline: {
-		engramLink: new RegExp(`(${escapeRegExp(MARKERS.engramLink1)})[^\\s]+?${escapeRegExp(MARKERS.engramLink2)}[^\\n]*?${escapeRegExp(MARKERS.engramLink3)}`),
-		autolink: /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/,
-		image: new RegExp(`(${escapeRegExp(MARKERS.image1)})[^\\s]+?${escapeRegExp(MARKERS.image2)}`),
+		engramLink: new RegExp(`${escapeRegExp(MARKERS.engramLink1)}[^\\s]+?${escapeRegExp(MARKERS.engramLink2)}[^\\n]*?${escapeRegExp(MARKERS.engramLink3)}`),
+		autolink: /(?:https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/, // added non-capturing group
+		image: new RegExp(`${escapeRegExp(MARKERS.image1)}[^\\s]+?${escapeRegExp(MARKERS.image2)}`),
 
-		alias: new RegExp(`(${escapeRegExp(MARKERS.alias1)}).+?${escapeRegExp(MARKERS.alias2)}.+?${escapeRegExp(MARKERS.alias3)}`),
-		bold: new RegExp(`(${escapeRegExp(MARKERS.bold)}).+?${escapeRegExp(MARKERS.bold)}`),
-		italic: new RegExp(`(${escapeRegExp(MARKERS.italic)}).+?${escapeRegExp(MARKERS.italic)}`),
-		underlined: new RegExp(`(${escapeRegExp(MARKERS.underlined)}).+?${escapeRegExp(MARKERS.underlined)}`),
-		highlighted: new RegExp(`(${escapeRegExp(MARKERS.highlighted)}).+?${escapeRegExp(MARKERS.highlighted)}`),
-		strikethrough: new RegExp(`(${escapeRegExp(MARKERS.strikethrough)}).+?${escapeRegExp(MARKERS.strikethrough)}`),
-		code: new RegExp(`(${escapeRegExp(MARKERS.code1)}).+?${escapeRegExp(MARKERS.code2)}`),
+		alias: new RegExp(`${escapeRegExp(MARKERS.alias1)}.+?${escapeRegExp(MARKERS.alias2)}.+?${escapeRegExp(MARKERS.alias3)}`),
+		bold: new RegExp(`${escapeRegExp(MARKERS.bold)}.+?${escapeRegExp(MARKERS.bold)}`),
+		italic: new RegExp(`${escapeRegExp(MARKERS.italic)}.+?${escapeRegExp(MARKERS.italic)}`),
+		underlined: new RegExp(`${escapeRegExp(MARKERS.underlined)}.+?${escapeRegExp(MARKERS.underlined)}`),
+		highlighted: new RegExp(`${escapeRegExp(MARKERS.highlighted)}.+?${escapeRegExp(MARKERS.highlighted)}`),
+		strikethrough: new RegExp(`${escapeRegExp(MARKERS.strikethrough)}.+?${escapeRegExp(MARKERS.strikethrough)}`),
+		code: new RegExp(`${escapeRegExp(MARKERS.code1)}.+?${escapeRegExp(MARKERS.code2)}`),
 	},
 
 	separator: {

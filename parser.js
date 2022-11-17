@@ -31,7 +31,7 @@ function getRegex(type) {
 
 	let patternString = '';
 	allRules.forEach((rule) => {
-		patternString += `${rule.source}|`;
+		patternString += `(${rule.source})|`; // add capture group here
 	});
 	patternString = patternString.slice(0, -1);
 
@@ -113,36 +113,55 @@ function blockCoreToHtml(blockCore) {
 	return `<code>${blockCoreToHtml(result[0][0].replace(MARKERS.code1, '').replace(MARKERS.code2, ''))}</code>`;
 }
 
-function listItemsToHtml(listItems) {
-	const listItemsAndSeparators = listItems.split(new RegExp(`(${RULES.separator.listItem.source})`));
-	const currentItemIndentLevel = 0;
-	let html = '';
+// function listItemsToHtml(listItems) {
+// 	const tree = [];
+// 	const html = '';
+// 	const listItemsAndSeparators = listItems.split(new RegExp(`(${RULES.separator.listItem.source})`));
+// 	const prevItemIndentLevel = 0;
 
-	console.log(listItemsAndSeparators);
+// 	for(let i = 2; i < listItemsAndSeparators.length; i += 2) {
+// 		const currItemSeparator = listItemsAndSeparators[i - 1];
+// 		const currItemIndentLevel = currItemSeparator.replace(MARKERS.listItemSeparator, '').length;
 
-	for(let i = 0; i < listItemsAndSeparators.length; i += 2) {
-		const nextItemSeparator = listItemsAndSeparators[i + 1];
-		const nextItemIndentLevel = nextItemSeparator.replace(MARKERS.listItemSeparator, '').length;
-		if (nextItemIndentLevel > currentItemIndentLevel) { // next block indentation level is higher
-			currentItemIndentLevel ++;
-			html += `<li>${blockCoreToHtml(listItemsAndSeparators[i].replace(, ''))}${listToHtml()}</li>`;
-			i += 2;
-		} else {
-			currentItemIndentLevel = nextItemIndentLevel;
-			html += `<li>${blockCoreToHtml(listItemsAndSeparators[i].replace(, ''))}</li>`;
-		}
-	}
+// 		if (currItemIndentLevel > prevItemIndentLevel) {
+// 			html += `<li><><></li>`;
+// 		} else {
 
-	return html;
-}
+// 		}
+// 	}
+// }
 
-function listToHtml(list, type) {
-	if (type === 'unordered') {
-		return `<ul>${listItemsToHtml(list)}</ul>`;
-	}
+// function listTree(list) {
+// 	const tree = [];
 
-	return `<ol>${listItemsToHtml(list)}</ol>`;
-}
+// 	let prevItemIndentLevel = 0;
+// 	const listItemsAndSeparators = list.split(new RegExp(`(${RULES.separator.listItem.source})`)).map((e) => {
+// 		if (e.startsWith(MARKERS.listItemSeparator)) {
+// 			let currItemIndentLevel = e.replace(MARKERS.listItemSeparator, '').length;
+
+// 			if (currItemIndentLevel > prevItemIndentLevel) {
+// 				currItemIndentLevel = prevItemIndentLevel + 1;
+// 				prevItemIndentLevel = currItemIndentLevel;
+
+// 				return `${MARKERS.listItemSeparator}${' '.repeat(currItemIndentLevel)}`;
+// 			}
+
+// 			prevItemIndentLevel = currItemIndentLevel;
+// 		}
+
+// 		return e;
+// 	});
+
+// 	const listItemsAndIndentLevels = listItemsAndSeparators.
+// }
+
+// function listToHtml(list, type) {
+// 	if (type === 'unordered') {
+// 		return `<ul>${listItemsToHtml(list)}</ul>`;
+// 	}
+
+// 	return `<ol>${listItemsToHtml(list)}</ol>`;
+// }
 
 function rootBlockToHtml(rootBlock) {
 	const regex = getRegex('block');
@@ -185,7 +204,7 @@ function rootBlockToHtml(rootBlock) {
 	}
 
 	if (result[0][7] || result[0][8]) { // list block
-		return listToHtml(result[0][0], 'type');
+		return '';
 	}
 
 	// hr block
@@ -208,8 +227,25 @@ function parse(engram) {
 	return rootBlocksToHtml(rootBlocks);
 }
 
-// console.log(parse('$doggo.img{}'));
+// console.log(parse('A paragraph with @@bold@@, //italic//'));
+
+console.log(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.'));
+// console.log(parse('. Unordered list item a\n. Unordered list item b\n. Unordered list item c'));
+// console.log(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3'));
+// console.log(parse('A paragraph with nested styles: @@bold, //italic, __underlined, ==highlighted, and --strikethrough--==__//@@ text.'));
+// console.log(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).'));
+
 // console.log(parse('*doggo{asdf, crabby doog ::48gh29}'));
-console.log(parse('. doggo\n . doggo'));
+// console.log(parse('. doggo\n . doggo'));
+
+// console.log(parse('* Title'));
+// console.log(parse('*_1 Level 1 subtitle'));
+// console.log(parse('*_2 Level 2 subtitle'));
+// console.log(parse('*_3 Level 3 subtitle'));
+// console.log(parse('---'));
+// console.log(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}'));
+// console.log(parse('A paragraph'));
+// console.log(parse('A paragraph with inline code: </console.log(\'hello world!\')>.'));
+// console.log(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.'));
 
 module.exports = { parse };
