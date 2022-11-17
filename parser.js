@@ -38,8 +38,30 @@ function getRegex(type) {
 	return new RegExp(patternString, 'g');
 }
 
-function inlineImageToHtml(inlineImage) {
-	return `<img src="${inlineImage.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}">`;
+function engramLinkToHtml(engramLink, type) {
+	const splitEngramLink = engramLink.split(MARKERS.engramLink2);
+	const engramLinkTitle = splitEngramLink[0].replace(MARKERS.engramLink1, '');
+	const engramLinkMetadataCore = splitEngramLink[1].replace(MARKERS.engramLink3, '');
+	const blockId = engramLinkMetadataCore.split(MARKERS.engramLinkMetadataSeparator).map((item) => item.trim()).filter((item) => item.startsWith(MARKERS.engramLinkBlockId))[0];
+
+	let to = engramLinkTitle;
+	if (blockId) {
+		to += blockId;
+	}
+
+	if (type === 'block') {
+		return `<p><engram-link to="${to}>${engramLinkTitle}</engram-link></p>`;
+	}
+
+	return `<engram-link to="${to}" >${engramLinkTitle}</engram-link>`;
+}
+
+function imageToHtml(image, type) {
+	if (type === 'block') {
+		return `<p><img src="${image.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}"></p>`;
+	}
+
+	return `<img src="${image.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}">`;
 }
 
 function blockCoreToHtml(blockCore) {
@@ -52,7 +74,7 @@ function blockCoreToHtml(blockCore) {
 	}
 
 	if (result[0][1]) { // inline engram link
-		return `...`;
+		return engramLinkToHtml(result[0][0], 'inline');
 	}
 
 	if (result[0][2]) { // autolink
@@ -60,7 +82,7 @@ function blockCoreToHtml(blockCore) {
 	}
 
 	if (result[0][3]) { // inline image
-		return inlineImageToHtml(result[0][0]);
+		return imageToHtml(result[0][0], 'inline');
 	}
 
 	if (result[0][4]) { // alias
@@ -91,13 +113,36 @@ function blockCoreToHtml(blockCore) {
 	return `<code>${blockCoreToHtml(result[0][0].replace(MARKERS.code1, '').replace(MARKERS.code2, ''))}</code>`;
 }
 
-function blockImageToHtml(imageBlock) {
-	return `<p><img src="${imageBlock.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}"></p>`;
+function listItemsToHtml(listItems) {
+	const listItemsAndSeparators = listItems.split(new RegExp(`(${RULES.separator.listItem.source})`));
+	const currentItemIndentLevel = 0;
+	let html = '';
+
+	console.log(listItemsAndSeparators);
+
+	for(let i = 0; i < listItemsAndSeparators.length; i += 2) {
+		const nextItemSeparator = listItemsAndSeparators[i + 1];
+		const nextItemIndentLevel = nextItemSeparator.replace(MARKERS.listItemSeparator, '').length;
+		if (nextItemIndentLevel > currentItemIndentLevel) { // next block indentation level is higher
+			currentItemIndentLevel ++;
+			html += `<li>${blockCoreToHtml(listItemsAndSeparators[i].replace(, ''))}${listToHtml()}</li>`;
+			i += 2;
+		} else {
+			currentItemIndentLevel = nextItemIndentLevel;
+			html += `<li>${blockCoreToHtml(listItemsAndSeparators[i].replace(, ''))}</li>`;
+		}
+	}
+
+	return html;
 }
 
-// function listToHtml() {
+function listToHtml(list, type) {
+	if (type === 'unordered') {
+		return `<ul>${listItemsToHtml(list)}</ul>`;
+	}
 
-// }
+	return `<ol>${listItemsToHtml(list)}</ol>`;
+}
 
 function rootBlockToHtml(rootBlock) {
 	const regex = getRegex('block');
@@ -116,11 +161,11 @@ function rootBlockToHtml(rootBlock) {
 	// })
 
 	if (result[0][1]) { // block engram link
-		return '...';
+		return engramLinkToHtml(result[0][0], 'block');
 	}
 
 	if (result[0][2]) { // block image
-		return blockImageToHtml(result[0][0]);
+		return imageToHtml(result[0][0], 'block');
 	}
 
 	if (result[0][3]) { // title block
@@ -140,7 +185,7 @@ function rootBlockToHtml(rootBlock) {
 	}
 
 	if (result[0][7] || result[0][8]) { // list block
-		return 'list';
+		return listToHtml(result[0][0], 'type');
 	}
 
 	// hr block
@@ -158,12 +203,13 @@ function rootBlocksToHtml(rootBlocks) {
 }
 
 function parse(engram) {
-	const rootBlocks = engram.split(RULES.rootBlockSeparator);
+	const rootBlocks = engram.split(RULES.separator.rootBlock);
 
 	return rootBlocksToHtml(rootBlocks);
 }
 
-console.log(parse('$doggo.img{}'));
-console.log(parse('*doggo{}'));
+// console.log(parse('$doggo.img{}'));
+// console.log(parse('*doggo{asdf, crabby doog ::48gh29}'));
+console.log(parse('. doggo\n . doggo'));
 
 module.exports = { parse };
