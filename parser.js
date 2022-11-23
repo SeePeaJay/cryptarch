@@ -64,53 +64,49 @@ function imageToHtml(image, type) {
 	return `<img src="${image.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}">`;
 }
 
-function blockCoreToHtml(blockCore) {
+function blockCoreToHtml(blockCore, cursor) {
 	const regex = getRegex('inline');
-
 	const result = [...blockCore.matchAll(regex)];
 
 	if (result.length === 0) {
 		return blockCore.replace('<', '&lt;').replace('>', '&gt;');
 	}
 
-	if (result[0][1]) { // inline engram link
-		return engramLinkToHtml(result[0][0], 'inline');
-	}
+	let html = '';
+	let updatedCursor = cursor;
 
-	if (result[0][2]) { // autolink
-		return `...`;
-	}
+	result.forEach((match) => {
+		html += blockCore.slice(updatedCursor, match.index).replace('<', '&lt;').replace('>', '&gt;');
+		updatedCursor = match.index;
 
-	if (result[0][3]) { // inline image
-		return imageToHtml(result[0][0], 'inline');
-	}
+		if (match[1]) { // inline engram link
+			html += engramLinkToHtml(match[0], 'inline');
+		} else if (match[2]) { // autolink
+			html += `...`;
+		} else if (match[3]) { // inline image
+			html += imageToHtml(match[0], 'inline');
+		} else if (match[4]) { // alias
+			html += '...';
+		} else if (match[5]) { // bold
+			html += `<strong>${blockCoreToHtml(match[0].replace(MARKERS.bold, '').replace(MARKERS.bold, ''), 0)}</strong>`;
+		} else if (match[6]) { // italic
+			html += `<em>${blockCoreToHtml(match[0].replace(MARKERS.italic, '').replace(MARKERS.italic, ''), 0)}</em>`;
+		} else if (match[7]) { // underlined
+			html += `<u>${blockCoreToHtml(match[0].replace(MARKERS.underlined, '').replace(MARKERS.underlined, ''), 0)}</u>`;
+		} else if (match[8]) { // highlighted
+			html += `<mark>${blockCoreToHtml(match[0].replace(MARKERS.highlighted, '').replace(MARKERS.highlighted, ''), 0)}</mark>`;
+		} else if (match[9]) { // strikethrough
+			html += `<del>${blockCoreToHtml(match[0].replace(MARKERS.strikethrough, '').replace(MARKERS.strikethrough, ''), 0)}</del>`;
+		} else { // code
+			html += `<code>${blockCoreToHtml(match[0].replace(MARKERS.code1, '').replace(MARKERS.code2, ''), 0)}</code>`;
+		}
 
-	if (result[0][4]) { // alias
-		return '...';
-	}
+		updatedCursor += match[0].length;
+	});
 
-	if (result[0][5]) { // bold
-		return `<strong>${blockCoreToHtml(result[0][0].replace(MARKERS.bold, '').replace(MARKERS.bold, ''))}</strong>`;
-	}
+	html += blockCore.slice(updatedCursor);
 
-	if (result[0][6]) { // italic
-		return `<em>${blockCoreToHtml(result[0][0].replace(MARKERS.italic, '').replace(MARKERS.italic, ''))}</em>`;
-	}
-
-	if (result[0][7]) { // underlined
-		return `<u>${blockCoreToHtml(result[0][0].replace(MARKERS.underlined, '').replace(MARKERS.underlined, ''))}</u>`;
-	}
-
-	if (result[0][8]) { // highlighted
-		return `<mark>${blockCoreToHtml(result[0][0].replace(MARKERS.highlighted, '').replace(MARKERS.highlighted, ''))}</mark>`;
-	}
-
-	if (result[0][9]) { // strikethrough
-		return `<del>${blockCoreToHtml(result[0][0].replace(MARKERS.strikethrough, '').replace(MARKERS.strikethrough, ''))}</del>`;
-	}
-	
-	// code
-	return `<code>${blockCoreToHtml(result[0][0].replace(MARKERS.code1, '').replace(MARKERS.code2, ''))}</code>`;
+	return html;
 }
 
 // function listItemsToHtml(listItems) {
@@ -169,7 +165,7 @@ function rootBlockToHtml(rootBlock) {
 	const result = [...rootBlock.matchAll(regex)];
 
 	if (result.length === 0) {
-		return `<p>${blockCoreToHtml(rootBlock)}</p>`;
+		return `<p>${blockCoreToHtml(rootBlock, 0)}</p>`;
 	}
 
 	// let blockMarker = ''; // may be handy for ordered list handling
@@ -188,19 +184,19 @@ function rootBlockToHtml(rootBlock) {
 	}
 
 	if (result[0][3]) { // title block
-		return `<h1>${blockCoreToHtml(result[0][0].replace(MARKERS.title, ''))}</h1>`;
+		return `<h1>${blockCoreToHtml(result[0][0].replace(MARKERS.title, ''), 0)}</h1>`;
 	}
 
 	if (result[0][4]) { // h1 block
-		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.heading1, ''))}</h2>`;
+		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.heading1, ''), 0)}</h2>`;
 	}
 
 	if (result[0][5]) { // h2 block
-		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.heading2, ''))}</h3>`;
+		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.heading2, ''), 0)}</h3>`;
 	}
 
 	if (result[0][6]) { // h3 block
-		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.heading3, ''))}</h4>`;
+		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.heading3, ''), 0)}</h4>`;
 	}
 
 	if (result[0][7] || result[0][8]) { // list block
@@ -227,25 +223,26 @@ function parse(engram) {
 	return rootBlocksToHtml(rootBlocks);
 }
 
-// console.log(parse('A paragraph with @@bold@@, //italic//'));
+// console.log(parse('A paragraph with @@bold@@, //italic//')); (y)
+// console.log(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.')); (y)
+// console.log(parse('A paragraph with nested styles: @@bold, //italic, __underlined, ==highlighted, and --strikethrough--==__//@@ text.')); (y)
 
-console.log(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.'));
 // console.log(parse('. Unordered list item a\n. Unordered list item b\n. Unordered list item c'));
 // console.log(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3'));
-// console.log(parse('A paragraph with nested styles: @@bold, //italic, __underlined, ==highlighted, and --strikethrough--==__//@@ text.'));
+
 // console.log(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).'));
 
-// console.log(parse('*doggo{asdf, crabby doog ::48gh29}'));
+console.log(parse('*doggo{asdf, crabby doog ::48gh29}'));
 // console.log(parse('. doggo\n . doggo'));
 
-// console.log(parse('* Title'));
-// console.log(parse('*_1 Level 1 subtitle'));
-// console.log(parse('*_2 Level 2 subtitle'));
-// console.log(parse('*_3 Level 3 subtitle'));
-// console.log(parse('---'));
-// console.log(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}'));
-// console.log(parse('A paragraph'));
-// console.log(parse('A paragraph with inline code: </console.log(\'hello world!\')>.'));
-// console.log(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.'));
+// console.log(parse('* Title')); (y)
+// console.log(parse('*_1 Level 1 subtitle')); (y)
+// console.log(parse('*_2 Level 2 subtitle')); (y)
+// console.log(parse('*_3 Level 3 subtitle')); (y)
+// console.log(parse('---')); (y)
+// console.log(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}')); (y)
+// console.log(parse('A paragraph')); (y)
+// console.log(parse('A paragraph with inline code: </console.log(\'hello world!\')>.')); (y)
+// console.log(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.')); (y)
 
 module.exports = { parse };
