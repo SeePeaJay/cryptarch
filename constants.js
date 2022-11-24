@@ -85,6 +85,9 @@ const RULES = {
 		listItem: /\n *(?=(?:\d{1,9})?\. (?! *\n| *$))/,
 	},
 
+	/*
+		This pattern is designed to match against engram link metadata.
+	*/
 	engramLinkBlockId: new RegExp(`${MARKERS.engramLinkBlockId}[A-Za-z0-9_-]{6}`), // https://github.com/ai/nanoid#api
 };
 

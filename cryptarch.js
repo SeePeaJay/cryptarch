@@ -12,8 +12,6 @@ function decrypt(engram) {
 	return parse(engram);
 }
 
-console.log(decrypt('doggo\n\ncatto'));
-
 module.exports = {
 	decrypt,
 	getBlockCore,

@@ -132,50 +132,8 @@ function blockCoreToHtml(blockCore, cursor) {
 	return html;
 }
 
-// function listItemsToHtml(listItems) {
-// 	const tree = [];
-// 	const html = '';
-// 	const listItemsAndSeparators = listItems.split(new RegExp(`(${RULES.separator.listItem.source})`));
-// 	const prevItemIndentLevel = 0;
-
-// 	for(let i = 2; i < listItemsAndSeparators.length; i += 2) {
-// 		const currItemSeparator = listItemsAndSeparators[i - 1];
-// 		const currItemIndentLevel = currItemSeparator.replace(MARKERS.listItemSeparator, '').length;
-
-// 		if (currItemIndentLevel > prevItemIndentLevel) {
-// 			html += `<li><><></li>`;
-// 		} else {
-
-// 		}
-// 	}
-// }
-
-// function listTree(list) {
-// 	const tree = [];
-
-// 	let prevItemIndentLevel = 0;
-// 	const listItemsAndSeparators = list.split(new RegExp(`(${RULES.separator.listItem.source})`)).map((e) => {
-// 		if (e.startsWith(MARKERS.listItemSeparator)) {
-// 			let currItemIndentLevel = e.replace(MARKERS.listItemSeparator, '').length;
-
-// 			if (currItemIndentLevel > prevItemIndentLevel) {
-// 				currItemIndentLevel = prevItemIndentLevel + 1;
-// 				prevItemIndentLevel = currItemIndentLevel;
-
-// 				return `${MARKERS.listItemSeparator}${' '.repeat(currItemIndentLevel)}`;
-// 			}
-
-// 			prevItemIndentLevel = currItemIndentLevel;
-// 		}
-
-// 		return e;
-// 	});
-
-// 	const listItemsAndIndentLevels = listItemsAndSeparators.
-// }
-
 function getListTree(list) {
-	// 
+	// "beautify" list item separators
 	let prevItemLevel = 0;
 	const listItemsAndSeparators = list.split(new RegExp(`(${RULES.separator.listItem.source})`)).map((e) => {
 		if (e.startsWith(MARKERS.listItemSeparator)) {
@@ -254,10 +212,7 @@ function treeToHtml(tree) {
 
 function listToHtml(list) {
 	const listTree = getListTree(list);
-	console.log(listTree);
-	console.log(treeToHtml(listTree));
-
-	return '';
+	return treeToHtml(listTree);
 }
 
 function rootBlockToHtml(rootBlock) {
@@ -268,13 +223,6 @@ function rootBlockToHtml(rootBlock) {
 	if (result.length === 0) {
 		return `<p>${blockCoreToHtml(rootBlock, 0)}</p>`;
 	}
-
-	// let blockMarker = ''; // may be handy for ordered list handling
-	// result[0].forEach((captureGroup) => { // works even if first capture group is not block marker
-	// 	if (captureGroup) {
-	// 		blockMarker = captureGroup;
-	// 	}
-	// })
 
 	if (result[0][1]) { // block engram link
 		return engramLinkToHtml(result[0][0], 'block');
@@ -324,30 +272,24 @@ function parse(engram) {
 	return rootBlocksToHtml(rootBlocks);
 }
 
-// console.log(parse('A paragraph with @@bold@@, //italic//')); (y)
-// console.log(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.')); (y)
-// console.log(parse('A paragraph with nested styles: @@bold, //italic, __underlined, ==highlighted, and --strikethrough--==__//@@ text.')); (y)
-
-
-// console.log(JSON.stringify(parse('. Unordered list item a\n     . Unordered list item b\n            . Unordered list item c'), null, 2));
-// console.log(parse('. Ordered list item 1\n. Ordered list item 2\n. Ordered list item 3'));
+console.log(parse('* Title'));
+console.log(parse('*_1 Level 1 Subtitle'));
+console.log(parse('*_2 Level 2 Subtitle'));
+console.log(parse('*_3 Level 3 Subtitle'));
+console.log(parse('. Unordered list item a\n. Unordered list item b\n. Unordered list item c'));
 console.log(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3'));
+console.log(parse('---'));
+console.log(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}'));
+console.log(parse('A paragraph.'));
+console.log(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.'));
+console.log(parse('A paragraph with nested styles: @@bold, //italic, __underlined, ==highlighted, and --strikethrough--==__//@@ text.'));
+console.log(parse('A paragraph with inline code: </console.log(\'hello world!\')>.'));
+console.log(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).'));
+console.log(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.'));
 
-// console.log(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).')); (y)
-
+// console.log(parse('. Unordered list item a\n     . Unordered list item b\n            . Unordered list item c'));
 // console.log(parse('*doggo{::48gh29}')); (y)
 // console.log(parse('*doggo{asdf, crabby doog ::48gh29}')); (y)
-
 // console.log(parse('. doggo\n . doggo'));
-
-// console.log(parse('* Title')); (y)
-// console.log(parse('*_1 Level 1 subtitle')); (y)
-// console.log(parse('*_2 Level 2 subtitle')); (y)
-// console.log(parse('*_3 Level 3 subtitle')); (y)
-// console.log(parse('---')); (y)
-// console.log(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}')); (y)
-// console.log(parse('A paragraph')); (y)
-// console.log(parse('A paragraph with inline code: </console.log(\'hello world!\')>.')); (y)
-// console.log(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.')); (y)
 
 module.exports = { parse };
