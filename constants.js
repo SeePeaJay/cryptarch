@@ -84,6 +84,8 @@ const RULES = {
 		*/
 		listItem: /\n *(?=(?:\d{1,9})?\. (?! *\n| *$))/,
 	},
+
+	engramLinkBlockId: new RegExp(`${MARKERS.engramLinkBlockId}[A-Za-z0-9_-]{6}`), // https://github.com/ai/nanoid#api
 };
 
 module.exports = { MARKERS, RULES };

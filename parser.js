@@ -42,18 +42,33 @@ function engramLinkToHtml(engramLink, type) {
 	const splitEngramLink = engramLink.split(MARKERS.engramLink2);
 	const engramLinkTitle = splitEngramLink[0].replace(MARKERS.engramLink1, '');
 	const engramLinkMetadataCore = splitEngramLink[1].replace(MARKERS.engramLink3, '');
-	const blockId = engramLinkMetadataCore.split(MARKERS.engramLinkMetadataSeparator).map((item) => item.trim()).filter((item) => item.startsWith(MARKERS.engramLinkBlockId))[0];
+	const blockIdMatch = engramLinkMetadataCore.match(RULES.engramLinkBlockId);
 
 	let to = engramLinkTitle;
-	if (blockId) {
-		to += blockId;
+	if (blockIdMatch) {
+		to += blockIdMatch[0];
 	}
 
 	if (type === 'block') {
-		return `<p><engram-link to="${to}>${engramLinkTitle}</engram-link></p>`;
+		return `<p><engram-link to="${to}>${to}</engram-link></p>`;
 	}
 
-	return `<engram-link to="${to}" >${engramLinkTitle}</engram-link>`;
+	return `<engram-link to="${to}" >${to}</engram-link>`;
+}
+
+function getUrlWithProtocol(url) {
+	const httpPattern = /^((http|https|ftp):\/\/)/;
+
+	let validHref = url;
+	if (!httpPattern.test(url)) {
+		validHref = `//${url}`;
+	}
+
+	return validHref;
+}
+
+function autolinkToHtml(autolink) {
+	return `<a href="${getUrlWithProtocol(autolink)}" target="_blank">${autolink}</a>`;
 }
 
 function imageToHtml(image, type) {
@@ -62,6 +77,14 @@ function imageToHtml(image, type) {
 	}
 
 	return `<img src="${image.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}">`;
+}
+
+function aliasToHtml(alias) {
+	const splitAlias = alias.split(MARKERS.alias2);
+	const aliasTitle = splitAlias[0].replace(MARKERS.alias1, '');
+	const aliasUrl = splitAlias[1].replace(MARKERS.alias3, '');
+
+	return `<a href="${getUrlWithProtocol(aliasUrl)}" target="_blank">${aliasTitle}</a>`;
 }
 
 function blockCoreToHtml(blockCore, cursor) {
@@ -82,11 +105,11 @@ function blockCoreToHtml(blockCore, cursor) {
 		if (match[1]) { // inline engram link
 			html += engramLinkToHtml(match[0], 'inline');
 		} else if (match[2]) { // autolink
-			html += `...`;
+			html += autolinkToHtml(match[0]);
 		} else if (match[3]) { // inline image
 			html += imageToHtml(match[0], 'inline');
 		} else if (match[4]) { // alias
-			html += '...';
+			html += aliasToHtml(match[0]);
 		} else if (match[5]) { // bold
 			html += `<strong>${blockCoreToHtml(match[0].replace(MARKERS.bold, '').replace(MARKERS.bold, ''), 0)}</strong>`;
 		} else if (match[6]) { // italic
@@ -151,13 +174,91 @@ function blockCoreToHtml(blockCore, cursor) {
 // 	const listItemsAndIndentLevels = listItemsAndSeparators.
 // }
 
-// function listToHtml(list, type) {
-// 	if (type === 'unordered') {
-// 		return `<ul>${listItemsToHtml(list)}</ul>`;
-// 	}
+function getListTree(list) {
+	// 
+	let prevItemLevel = 0;
+	const listItemsAndSeparators = list.split(new RegExp(`(${RULES.separator.listItem.source})`)).map((e) => {
+		if (e.startsWith(MARKERS.listItemSeparator)) {
+			let currItemLevel = e.replace(MARKERS.listItemSeparator, '').length;
 
-// 	return `<ol>${listItemsToHtml(list)}</ol>`;
-// }
+			if (currItemLevel > prevItemLevel) {
+				currItemLevel = prevItemLevel + 1;
+				prevItemLevel = currItemLevel;
+
+				return `${MARKERS.listItemSeparator}${' '.repeat(currItemLevel)}`;
+			}
+
+			prevItemLevel = currItemLevel;
+		}
+
+		return e;
+	});
+
+	// create flattenedListTree for actual listTree below
+	const flattenedListTree = [{ listItem: listItemsAndSeparators[0], level: 0, id: '1', parentId: '0' }];
+	for (let i = 2; i < listItemsAndSeparators.length; i += 2) {
+		const currItemLevel = listItemsAndSeparators[i - 1].replace(MARKERS.listItemSeparator, '').length;
+		const lowerLevelElements = flattenedListTree.filter((e) => e.level === currItemLevel - 1);
+
+		flattenedListTree.push({
+			listItem: listItemsAndSeparators[i],
+			level: currItemLevel,
+			id: ((i / 2) + 1).toString(),
+			parentId: (lowerLevelElements.length ? lowerLevelElements[lowerLevelElements.length - 1].id : '0'),
+		});
+	}
+	flattenedListTree.sort((a, b) => a.level - b.level);
+
+	// create actual listTree, as per https://stackoverflow.com/a/18018037
+	const map = {};
+	let node;
+	const roots = [];
+  
+  for (let i = 0; i < flattenedListTree.length; i += 1) {
+    map[flattenedListTree[i].id] = i; // initialize the map
+    flattenedListTree[i].children = []; // initialize the children
+  }
+  
+  for (let j = 0; j < flattenedListTree.length; j += 1) {
+    node = flattenedListTree[j];
+    if (node.parentId !== "0") {
+      // if you have dangling branches check that map[node.parentId] exists
+      flattenedListTree[map[node.parentId]].children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
+function treeNodeToHtml(treeNode) {
+	let html = '';
+
+	treeNode.forEach((node) => {
+		const nodeIsUnordered = node.listItem.startsWith(MARKERS.unorderedList);
+		const nodeHasChildren = node.children.length > 0;
+
+		html += `<li>${node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.unorderedList : MARKERS.orderedList)), '')}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
+	});
+
+	return html;
+}
+
+function treeToHtml(tree) {
+	if (tree[0].listItem.startsWith(MARKERS.unorderedList)) {
+		return `<ul>${treeNodeToHtml(tree)}</ul>`;
+	}
+
+	return `<ol>${treeNodeToHtml(tree)}</ol>`;
+}
+
+function listToHtml(list) {
+	const listTree = getListTree(list);
+	console.log(listTree);
+	console.log(treeToHtml(listTree));
+
+	return '';
+}
 
 function rootBlockToHtml(rootBlock) {
 	const regex = getRegex('block');
@@ -200,7 +301,7 @@ function rootBlockToHtml(rootBlock) {
 	}
 
 	if (result[0][7] || result[0][8]) { // list block
-		return '';
+		return listToHtml(result[0][0]);
 	}
 
 	// hr block
@@ -227,12 +328,16 @@ function parse(engram) {
 // console.log(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.')); (y)
 // console.log(parse('A paragraph with nested styles: @@bold, //italic, __underlined, ==highlighted, and --strikethrough--==__//@@ text.')); (y)
 
-// console.log(parse('. Unordered list item a\n. Unordered list item b\n. Unordered list item c'));
-// console.log(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3'));
 
-// console.log(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).'));
+// console.log(JSON.stringify(parse('. Unordered list item a\n     . Unordered list item b\n            . Unordered list item c'), null, 2));
+// console.log(parse('. Ordered list item 1\n. Ordered list item 2\n. Ordered list item 3'));
+console.log(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3'));
 
-console.log(parse('*doggo{asdf, crabby doog ::48gh29}'));
+// console.log(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).')); (y)
+
+// console.log(parse('*doggo{::48gh29}')); (y)
+// console.log(parse('*doggo{asdf, crabby doog ::48gh29}')); (y)
+
 // console.log(parse('. doggo\n . doggo'));
 
 // console.log(parse('* Title')); (y)
