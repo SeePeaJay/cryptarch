@@ -272,24 +272,4 @@ function parse(engram) {
 	return rootBlocksToHtml(rootBlocks);
 }
 
-console.log(parse('* Title'));
-console.log(parse('*_1 Level 1 Subtitle'));
-console.log(parse('*_2 Level 2 Subtitle'));
-console.log(parse('*_3 Level 3 Subtitle'));
-console.log(parse('. Unordered list item a\n. Unordered list item b\n. Unordered list item c'));
-console.log(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3'));
-console.log(parse('---'));
-console.log(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}'));
-console.log(parse('A paragraph.'));
-console.log(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.'));
-console.log(parse('A paragraph with nested styles: @@bold, //italic, __underlined, ==highlighted, and --strikethrough--==__//@@ text.'));
-console.log(parse('A paragraph with inline code: </console.log(\'hello world!\')>.'));
-console.log(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).'));
-console.log(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.'));
-
-// console.log(parse('. Unordered list item a\n     . Unordered list item b\n            . Unordered list item c'));
-// console.log(parse('*doggo{::48gh29}')); (y)
-// console.log(parse('*doggo{asdf, crabby doog ::48gh29}')); (y)
-// console.log(parse('. doggo\n . doggo'));
-
 module.exports = { parse };
