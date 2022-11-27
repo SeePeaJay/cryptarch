@@ -4,28 +4,28 @@ function getRegex(type) {
 	let allRules;
 	if (type === 'block') {
 		allRules = [
-			RULES.block.engramLink, // 1
-			RULES.block.image, // 2
-			RULES.block.title, // 3
-			RULES.block.heading1, // 4
-			RULES.block.heading2, // 5
-			RULES.block.heading3, // 6
-			RULES.block.unorderedList, // 7
-			RULES.block.orderedList, // 8
-			RULES.block.horizontalRule, // 9
+			RULES.block.title, // 1
+			RULES.block.subtitle.level1, // 2
+			RULES.block.subtitle.level2, // 3
+			RULES.block.subtitle.level3, // 4
+			RULES.block.list.unordered, // 5
+			RULES.block.list.ordered, // 6
+			RULES.block.horizontalRule, // 7
+			RULES.hybrid.engramLink.block, // 8
+			RULES.hybrid.image.block, // 9
 		];
 	} else {
 		allRules = [
-			RULES.inline.engramLink, // 1
-			RULES.inline.autolink, // 2
-			RULES.inline.image, // 3
-			RULES.inline.alias, // 4
-			RULES.inline.bold, // 5
-			RULES.inline.italic, // 6
-			RULES.inline.underlined, // 7
-			RULES.inline.highlighted, // 8
-			RULES.inline.strikethrough, // 9
-			RULES.inline.code, // 10
+			RULES.inline.alias, // 1
+			RULES.inline.bold, // 2
+			RULES.inline.italic, // 3
+			RULES.inline.underlined, // 4
+			RULES.inline.highlighted, // 5
+			RULES.inline.strikethrough, // 6
+			RULES.inline.code, // 7
+			RULES.inline.autolink, // 8
+			RULES.hybrid.engramLink.inline, // 9
+			RULES.hybrid.image.inline, // 10
 		];
 	}
 
@@ -39,21 +39,27 @@ function getRegex(type) {
 }
 
 function engramLinkToHtml(engramLink, type) {
-	const splitEngramLink = engramLink.split(MARKERS.engramLink2);
-	const engramLinkTitle = splitEngramLink[0].replace(MARKERS.engramLink1, '');
-	const engramLinkMetadataCore = splitEngramLink[1].replace(MARKERS.engramLink3, '');
-	const blockIdMatch = engramLinkMetadataCore.match(RULES.engramLinkBlockId);
+	if (type && engramLink.startsWith(MARKERS.hybrid.engramLink.engramLink)) {
+		const splitEngramLink = engramLink.split(MARKERS.metadata.container[1]);
+		const engramLinkTitle = splitEngramLink[0].replace(MARKERS.hybrid.engramLink.engramLink, '');
+		const engramLinkMetadataCore = splitEngramLink[1].replace(MARKERS.metadata.container[2], '');
+		const blockIdMatch = engramLinkMetadataCore.match(RULES.metadata.blockId);
 
-	let to = engramLinkTitle;
-	if (blockIdMatch) {
-		to += blockIdMatch[0];
+		let to = engramLinkTitle;
+		if (blockIdMatch) {
+			to += blockIdMatch[0];
+		}
+
+		if (type === 'block') {
+			return `<p><engram-link to="${to}>${to}</engram-link></p>`;
+		}
+
+		return `<engram-link to="${to}">${to}</engram-link>`;
+	} else {
+		const tagTitle = engramLink.replace(MARKERS.hybrid.engramLink.tag, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '');
+
+		return `<engram-link to="${tagTitle}" isTag>${tagTitle}</engram-link>`;
 	}
-
-	if (type === 'block') {
-		return `<p><engram-link to="${to}>${to}</engram-link></p>`;
-	}
-
-	return `<engram-link to="${to}" >${to}</engram-link>`;
 }
 
 function getUrlWithProtocol(url) {
@@ -73,16 +79,16 @@ function autolinkToHtml(autolink) {
 
 function imageToHtml(image, type) {
 	if (type === 'block') {
-		return `<p><img src="${image.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}"></p>`;
+		return `<p><img src="${image.replace(MARKERS.hybrid.image, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '')}"></p>`;
 	}
 
-	return `<img src="${image.replace(MARKERS.image1, '').replace(MARKERS.image2, '')}">`;
+	return `<img src="${image.replace(MARKERS.hybrid.image, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '')}">`;
 }
 
 function aliasToHtml(alias) {
-	const splitAlias = alias.split(MARKERS.alias2);
-	const aliasTitle = splitAlias[0].replace(MARKERS.alias1, '');
-	const aliasUrl = splitAlias[1].replace(MARKERS.alias3, '');
+	const splitAlias = alias.split(MARKERS.inline.alias[2]);
+	const aliasTitle = splitAlias[0].replace(MARKERS.inline.alias[1], '');
+	const aliasUrl = splitAlias[1].replace(MARKERS.inline.alias[3], '');
 
 	return `<a href="${getUrlWithProtocol(aliasUrl)}" target="_blank">${aliasTitle}</a>`;
 }
@@ -102,26 +108,26 @@ function blockCoreToHtml(blockCore, cursor) {
 		html += blockCore.slice(updatedCursor, match.index).replace('<', '&lt;').replace('>', '&gt;');
 		updatedCursor = match.index;
 
-		if (match[1]) { // inline engram link
-			html += engramLinkToHtml(match[0], 'inline');
-		} else if (match[2]) { // autolink
-			html += autolinkToHtml(match[0]);
-		} else if (match[3]) { // inline image
-			html += imageToHtml(match[0], 'inline');
-		} else if (match[4]) { // alias
+		if (match[1]) { // alias
 			html += aliasToHtml(match[0]);
-		} else if (match[5]) { // bold
-			html += `<strong>${blockCoreToHtml(match[0].replace(MARKERS.bold, '').replace(MARKERS.bold, ''), 0)}</strong>`;
-		} else if (match[6]) { // italic
-			html += `<em>${blockCoreToHtml(match[0].replace(MARKERS.italic, '').replace(MARKERS.italic, ''), 0)}</em>`;
-		} else if (match[7]) { // underlined
-			html += `<u>${blockCoreToHtml(match[0].replace(MARKERS.underlined, '').replace(MARKERS.underlined, ''), 0)}</u>`;
-		} else if (match[8]) { // highlighted
-			html += `<mark>${blockCoreToHtml(match[0].replace(MARKERS.highlighted, '').replace(MARKERS.highlighted, ''), 0)}</mark>`;
-		} else if (match[9]) { // strikethrough
-			html += `<del>${blockCoreToHtml(match[0].replace(MARKERS.strikethrough, '').replace(MARKERS.strikethrough, ''), 0)}</del>`;
-		} else { // code
-			html += `<code>${blockCoreToHtml(match[0].replace(MARKERS.code1, '').replace(MARKERS.code2, ''), 0)}</code>`;
+		} else if (match[2]) { // bold
+			html += `<strong>${blockCoreToHtml(match[0].replace(MARKERS.inline.bold, '').replace(MARKERS.inline.bold, ''), 0)}</strong>`;
+		} else if (match[3]) { // italic
+			html += `<em>${blockCoreToHtml(match[0].replace(MARKERS.inline.italic, '').replace(MARKERS.inline.italic, ''), 0)}</em>`;
+		} else if (match[4]) { // underlined
+			html += `<u>${blockCoreToHtml(match[0].replace(MARKERS.inline.underlined, '').replace(MARKERS.inline.underlined, ''), 0)}</u>`;
+		} else if (match[5]) { // highlighted
+			html += `<mark>${blockCoreToHtml(match[0].replace(MARKERS.inline.highlighted, '').replace(MARKERS.inline.highlighted, ''), 0)}</mark>`;
+		} else if (match[6]) { // strikethrough
+			html += `<del>${blockCoreToHtml(match[0].replace(MARKERS.inline.strikethrough, '').replace(MARKERS.inline.strikethrough, ''), 0)}</del>`;
+		} else if (match[7]) { // code
+			html += `<code>${blockCoreToHtml(match[0].replace(MARKERS.inline.code[1], '').replace(MARKERS.inline.code[2], ''), 0)}</code>`;
+		} else if (match[8]) { // autolink
+			html += autolinkToHtml(match[0]);
+		} else if (match[9]) { // inline engram link
+			html += engramLinkToHtml(match[0], 'inline');
+		} else { // inline image
+			html += imageToHtml(match[0], 'inline');
 		}
 
 		updatedCursor += match[0].length;
@@ -133,17 +139,17 @@ function blockCoreToHtml(blockCore, cursor) {
 }
 
 function getListTree(list) {
-	// "beautify" list item separators
+	// "beautify" list item delimiters
 	let prevItemLevel = 0;
-	const listItemsAndSeparators = list.split(new RegExp(`(${RULES.separator.listItem.source})`)).map((e) => {
-		if (e.startsWith(MARKERS.listItemSeparator)) {
-			let currItemLevel = e.replace(MARKERS.listItemSeparator, '').length;
+	const listItemsAndDelimiters = list.split(new RegExp(`(${RULES.block.list.itemDelimiter.source})`)).map((e) => {
+		if (e.startsWith(MARKERS.block.list.itemDelimiter)) {
+			let currItemLevel = e.replace(MARKERS.block.list.itemDelimiter, '').length;
 
 			if (currItemLevel > prevItemLevel) {
 				currItemLevel = prevItemLevel + 1;
 				prevItemLevel = currItemLevel;
 
-				return `${MARKERS.listItemSeparator}${' '.repeat(currItemLevel)}`;
+				return `${MARKERS.block.list.itemDelimiter}${' '.repeat(currItemLevel)}`;
 			}
 
 			prevItemLevel = currItemLevel;
@@ -153,13 +159,13 @@ function getListTree(list) {
 	});
 
 	// create flattenedListTree for actual listTree below
-	const flattenedListTree = [{ listItem: listItemsAndSeparators[0], level: 0, id: '1', parentId: '0' }];
-	for (let i = 2; i < listItemsAndSeparators.length; i += 2) {
-		const currItemLevel = listItemsAndSeparators[i - 1].replace(MARKERS.listItemSeparator, '').length;
+	const flattenedListTree = [{ listItem: listItemsAndDelimiters[0], level: 0, id: '1', parentId: '0' }];
+	for (let i = 2; i < listItemsAndDelimiters.length; i += 2) {
+		const currItemLevel = listItemsAndDelimiters[i - 1].replace(MARKERS.block.list.itemDelimiter, '').length;
 		const lowerLevelElements = flattenedListTree.filter((e) => e.level === currItemLevel - 1);
 
 		flattenedListTree.push({
-			listItem: listItemsAndSeparators[i],
+			listItem: listItemsAndDelimiters[i],
 			level: currItemLevel,
 			id: ((i / 2) + 1).toString(),
 			parentId: (lowerLevelElements.length ? lowerLevelElements[lowerLevelElements.length - 1].id : '0'),
@@ -193,17 +199,17 @@ function treeNodeToHtml(treeNode) {
 	let html = '';
 
 	treeNode.forEach((node) => {
-		const nodeIsUnordered = node.listItem.startsWith(MARKERS.unorderedList);
+		const nodeIsUnordered = node.listItem.startsWith(MARKERS.block.list.unordered);
 		const nodeHasChildren = node.children.length > 0;
 
-		html += `<li>${node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.unorderedList : MARKERS.orderedList)), '')}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
+		html += `<li>${node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.block.list.unordered : MARKERS.block.list.ordered)), '')}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
 	});
 
 	return html;
 }
 
 function treeToHtml(tree) {
-	if (tree[0].listItem.startsWith(MARKERS.unorderedList)) {
+	if (tree[0].listItem.startsWith(MARKERS.block.list.unordered)) {
 		return `<ul>${treeNodeToHtml(tree)}</ul>`;
 	}
 
@@ -224,36 +230,36 @@ function rootBlockToHtml(rootBlock) {
 		return `<p>${blockCoreToHtml(rootBlock, 0)}</p>`;
 	}
 
-	if (result[0][1]) { // block engram link
-		return engramLinkToHtml(result[0][0], 'block');
+	if (result[0][1]) { // title block
+		return `<h1>${blockCoreToHtml(result[0][0].replace(MARKERS.block.title, ''), 0)}</h1>`;
 	}
 
-	if (result[0][2]) { // block image
-		return imageToHtml(result[0][0], 'block');
+	if (result[0][2]) { // h1 block
+		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level1, ''), 0)}</h2>`;
 	}
 
-	if (result[0][3]) { // title block
-		return `<h1>${blockCoreToHtml(result[0][0].replace(MARKERS.title, ''), 0)}</h1>`;
+	if (result[0][3]) { // h2 block
+		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level2, ''), 0)}</h3>`;
 	}
 
-	if (result[0][4]) { // h1 block
-		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.heading1, ''), 0)}</h2>`;
+	if (result[0][4]) { // h3 block
+		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level3, ''), 0)}</h4>`;
 	}
 
-	if (result[0][5]) { // h2 block
-		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.heading2, ''), 0)}</h3>`;
-	}
-
-	if (result[0][6]) { // h3 block
-		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.heading3, ''), 0)}</h4>`;
-	}
-
-	if (result[0][7] || result[0][8]) { // list block
+	if (result[0][5] || result[0][6]) { // list block
 		return listToHtml(result[0][0]);
 	}
 
-	// hr block
-	return '<hr>';
+	if (result[0][7]) { // hr block
+		return '<hr>';
+	}
+
+	if (result[0][8]) { // block engram link
+		return engramLinkToHtml(result[0][0], 'block');
+	}
+
+	// block image
+	return imageToHtml(result[0][0], 'block');
 }
 
 function rootBlocksToHtml(rootBlocks) {
@@ -267,7 +273,7 @@ function rootBlocksToHtml(rootBlocks) {
 }
 
 function parse(engram) {
-	const rootBlocks = engram.split(RULES.separator.rootBlock);
+	const rootBlocks = engram.split(RULES.rootBlockDelimiter);
 
 	return rootBlocksToHtml(rootBlocks);
 }

@@ -29,16 +29,12 @@ describe('Block Element Tests', () => {
 		expect(parse('. doggo\n . doggo')).toBe('<ul><li>doggo<ul><li>doggo</li></ul></li></ul>');
 	});
 
-	test('List with Ugly Separators', () => {
+	test('List with Ugly Delimiters', () => {
 		expect(parse('. Unordered list item a\n     . Unordered list item b\n            . Unordered list item c')).toBe('<ul><li>Unordered list item a<ul><li>Unordered list item b<ul><li>Unordered list item c</li></ul></li></ul></li></ul>');
 	});
 	
 	test('Horizontal Rule', () => {
 		expect(parse('---')).toBe('<hr>');
-	});
-	
-	test('Block Image', () => {
-		expect(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}')).toBe('<p><img src="http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513"></p>');
 	});
 	
 	test('Paragraph', () => {
@@ -47,6 +43,32 @@ describe('Block Element Tests', () => {
 });
 
 describe('Inline Element Tests', () => {
+	test('Engram Link with Block Id', () => {
+		expect(parse('*doggo{::48gh29}')).toBe('<p><engram-link to="doggo::48gh29>doggo::48gh29</engram-link></p>');
+	});
+	
+	test('Engram Link with Block Id and Other Metadata', () => {
+		expect(parse('*doggo{asdf, crabby doog ::48gh29}')).toBe('<p><engram-link to="doggo::48gh29>doggo::48gh29</engram-link></p>');
+	});
+
+	test('Tag', () => {
+		expect(parse('A paragraph with a tag: #test1{}.')).toBe('<p>A paragraph with a tag: <engram-link to="test1" isTag>test1</engram-link>.</p>');
+	});
+
+	test('Block Image', () => {
+		expect(parse('$http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}')).toBe('<p><img src="http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513"></p>');
+	});
+
+	test('Inline Image', () => {
+		expect(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.')).toBe('<p>A paragraph with an inline image: <img src="http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513">.</p>');
+	});
+});
+
+describe('Inline Element Tests', () => {
+	test('External Links', () => {
+		expect(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).')).toBe('<p>A paragraph with two types of links: autolink ( <a href="//www.google.com" target="_blank">www.google.com</a> ), and <a href="//www.google.com" target="_blank">link alias</a>.</p>');
+	});
+	
 	test('Consecutive Inline Styles', () => {
 		expect(parse('A paragraph with @@bold@@, //italic//, __underlined__, ==highlighted==, and --strikethrough-- text.')).toBe('<p>A paragraph with <strong>bold</strong>, <em>italic</em>, <u>underlined</u>, <mark>highlighted</mark>, and <del>strikethrough</del> text.</p>');
 	});
@@ -58,22 +80,9 @@ describe('Inline Element Tests', () => {
 	test('Inline Code', () => {
 		expect(parse('A paragraph with inline code: </console.log(\'hello world!\')>.')).toBe('<p>A paragraph with inline code: <code>console.log(\'hello world!\')</code>.</p>');
 	});
-
-	test('External Links', () => {
-		expect(parse('A paragraph with two types of links: autolink ( www.google.com ), and __link alias__(www.google.com).')).toBe('<p>A paragraph with two types of links: autolink ( <a href="//www.google.com" target="_blank">www.google.com</a> ), and <a href="//www.google.com" target="_blank">link alias</a>.</p>');
-	});
-
-	test('Inline Image', () => {
-		expect(parse('A paragraph with an inline image: $http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513{}.')).toBe('<p>A paragraph with an inline image: <img src="http://static.wikia.nocookie.net/ninjajojos-bizarre-adventure/images/f/f7/Made_in_Heaven.png/revision/latest/top-crop/width/360/height/450?cb=20210721002513">.</p>');
-	});
 });
 
-test('Engram Link with Block Id', () => {
-	expect(parse('*doggo{::48gh29}')).toBe('<p><engram-link to="doggo::48gh29>doggo::48gh29</engram-link></p>');
+test('Multiple Blocks', () => {
+	expect(parse('Paragraph A\n\nParagraph B\n\nParagraph C')).toBe('<p>Paragraph A</p><p>Paragraph B</p><p>Paragraph C</p>');
 });
 
-test('Engram Link with Block Id and Other Metadata', () => {
-	expect(parse('*doggo{asdf, crabby doog ::48gh29}')).toBe('<p><engram-link to="doggo::48gh29>doggo::48gh29</engram-link></p>');
-});
-
-// TODO: test multiple root blocks
