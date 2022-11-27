@@ -44,11 +44,11 @@ describe('Block Element Tests', () => {
 
 describe('Inline Element Tests', () => {
 	test('Engram Link with Block Id', () => {
-		expect(parse('*doggo{::48gh29}')).toBe('<p><engram-link to="doggo::48gh29>doggo::48gh29</engram-link></p>');
+		expect(parse('*doggo{::48gh29}')).toBe('<p><engram-link to="doggo::48gh29">doggo::48gh29</engram-link></p>');
 	});
 	
 	test('Engram Link with Block Id and Other Metadata', () => {
-		expect(parse('*doggo{asdf, crabby doog ::48gh29}')).toBe('<p><engram-link to="doggo::48gh29>doggo::48gh29</engram-link></p>');
+		expect(parse('*doggo{asdf, crabby doog ::48gh29}')).toBe('<p><engram-link to="doggo::48gh29">doggo::48gh29</engram-link></p>');
 	});
 
 	test('Tag', () => {

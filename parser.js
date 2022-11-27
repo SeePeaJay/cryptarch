@@ -38,6 +38,29 @@ function getRegex(type) {
 	return new RegExp(patternString, 'g');
 }
 
+function getUrlWithProtocol(url) {
+	const httpPattern = /^((http|https|ftp):\/\/)/;
+
+	let validHref = url;
+	if (!httpPattern.test(url)) {
+		validHref = `//${url}`;
+	}
+
+	return validHref;
+}
+
+function aliasToHtml(alias) {
+	const splitAlias = alias.split(MARKERS.inline.alias[2]);
+	const aliasTitle = splitAlias[0].replace(MARKERS.inline.alias[1], '');
+	const aliasUrl = splitAlias[1].replace(MARKERS.inline.alias[3], '');
+
+	return `<a href="${getUrlWithProtocol(aliasUrl)}" target="_blank">${aliasTitle}</a>`;
+}
+
+function autolinkToHtml(autolink) {
+	return `<a href="${getUrlWithProtocol(autolink)}" target="_blank">${autolink}</a>`;
+}
+
 function engramLinkToHtml(engramLink, type) {
 	if (type && engramLink.startsWith(MARKERS.hybrid.engramLink.engramLink)) {
 		const splitEngramLink = engramLink.split(MARKERS.metadata.container[1]);
@@ -51,7 +74,7 @@ function engramLinkToHtml(engramLink, type) {
 		}
 
 		if (type === 'block') {
-			return `<p><engram-link to="${to}>${to}</engram-link></p>`;
+			return `<p><engram-link to="${to}">${to}</engram-link></p>`;
 		}
 
 		return `<engram-link to="${to}">${to}</engram-link>`;
@@ -62,35 +85,12 @@ function engramLinkToHtml(engramLink, type) {
 	}
 }
 
-function getUrlWithProtocol(url) {
-	const httpPattern = /^((http|https|ftp):\/\/)/;
-
-	let validHref = url;
-	if (!httpPattern.test(url)) {
-		validHref = `//${url}`;
-	}
-
-	return validHref;
-}
-
-function autolinkToHtml(autolink) {
-	return `<a href="${getUrlWithProtocol(autolink)}" target="_blank">${autolink}</a>`;
-}
-
 function imageToHtml(image, type) {
 	if (type === 'block') {
 		return `<p><img src="${image.replace(MARKERS.hybrid.image, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '')}"></p>`;
 	}
 
 	return `<img src="${image.replace(MARKERS.hybrid.image, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '')}">`;
-}
-
-function aliasToHtml(alias) {
-	const splitAlias = alias.split(MARKERS.inline.alias[2]);
-	const aliasTitle = splitAlias[0].replace(MARKERS.inline.alias[1], '');
-	const aliasUrl = splitAlias[1].replace(MARKERS.inline.alias[3], '');
-
-	return `<a href="${getUrlWithProtocol(aliasUrl)}" target="_blank">${aliasTitle}</a>`;
 }
 
 function blockCoreToHtml(blockCore, cursor) {
