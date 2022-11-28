@@ -112,6 +112,8 @@ const RULES = {
 	},
 	
 	metadata: {
+		block: /\n{[\S\s]*}/,
+
 		/*
 			This pattern is designed to match against engram link metadata.
 		*/

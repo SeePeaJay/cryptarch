@@ -40,7 +40,7 @@ function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` if con
 	return this.getBlockMetadata(blockContents).slice(3, -2); // TODO: ref magic num
 }
 
-function getBlockId(blockContents) {
+function getBlockId(blockContents) { // TODO: check if this is needed
 	const matchedBlockId = this.getBlockMetadataCore(blockContents).match(/::.{6}(?=\s|$)/); // TODO: ref
 
 	if (!matchedBlockId) {
@@ -50,11 +50,11 @@ function getBlockId(blockContents) {
 	return matchedBlockId[0];
 }
 
-function getBlockIdCore(blockContents) {
+function getBlockIdCore(blockContents) { // TODO: check if this is needed
 	return this.getBlockId(blockContents).slice(2); // get rid of block id marker (::)
 }
 
-function getTitleBlockCore(titleBlockContents) {
+function getTitleBlockCore(titleBlockContents) { // TODO: check compatability
 	return this.getBlockBody(titleBlockContents).slice(2); // get rid of title marker; have not renamed yet at this line in time
 }
 
