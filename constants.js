@@ -59,7 +59,7 @@ const RULES = {
 	/*
 		This pattern is designed to match against the whole engram.
 	*/
-	rootBlockDelimiter: /\n(?: |\t)*\n/,
+	rootBlockDelimiter: new RegExp(`${escapeRegExp(MARKERS.rootBlockDelimiter[0])}(?: |\\t)*${escapeRegExp(MARKERS.rootBlockDelimiter[1])}`),
 
 	/*
 		Block rules are designed to match against a block.
@@ -80,7 +80,7 @@ const RULES = {
 				This specific pattern is designed to match against a list only.
 				Translation: match newline w/ n spaces, as long as a proper list item follows.
 			*/
-			itemDelimiter: /\n *(?=(?:\d{1,9})?\. (?! *\n| *$))/,
+			itemDelimiter: new RegExp(`${escapeRegExp(MARKERS.block.list.itemDelimiter)} *(?=(?:\\d{1,9})?\\. (?! *${escapeRegExp(MARKERS.block.list.itemDelimiter)}| *$))`)
 		},
 		horizontalRule: new RegExp(`^${escapeRegExp(MARKERS.block.horizontalRule)}[^\\S\\n]*$`),
 	},
@@ -112,7 +112,7 @@ const RULES = {
 	},
 	
 	metadata: {
-		block: /\n{[\S\s]*}/,
+		block: new RegExp(`\\n${escapeRegExp(MARKERS.metadata.container[1])}[\\S\\s]*${escapeRegExp(MARKERS.metadata.container[2])}`),
 
 		/*
 			This pattern is designed to match against engram link metadata.
