@@ -78,11 +78,11 @@ function engramLinkToHtml(engramLink, type) {
 		}
 
 		return `<engram-link to="${to}">${to}</engram-link>`;
-	} else {
-		const tagTitle = engramLink.replace(MARKERS.hybrid.engramLink.tag, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '');
-
-		return `<engram-link to="${tagTitle}" isTag>${tagTitle}</engram-link>`;
 	}
+
+	const tagTitle = engramLink.replace(MARKERS.hybrid.engramLink.tag, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '');
+
+	return `<engram-link to="${tagTitle}" isTag>${tagTitle}</engram-link>`;
 }
 
 function imageToHtml(image, type) {
