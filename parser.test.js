@@ -16,21 +16,27 @@ describe('Block Element Tests', () => {
 	test('Level 3 Subtitle', () => {
 		expect(parse('*_3 Level 3 Subtitle')).toBe('<h4>Level 3 Subtitle</h4>');
 	});
-	
-	test('Unordered List', () => {
-		expect(parse('. Unordered list item a\n. Unordered list item b\n. Unordered list item c')).toBe('<ul><li>Unordered list item a</li><li>Unordered list item b</li><li>Unordered list item c</li></ul>');
-	});
-	
-	test('Ordered List', () => {
-		expect(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3')).toBe('<ol><li>Ordered list item 1</li><li>Ordered list item 2</li><li>Ordered list item 3</li></ol>');
-	});
 
-	test('List with Nested Items', () => {
-		expect(parse('. doggo\n . doggo')).toBe('<ul><li>doggo<ul><li>doggo</li></ul></li></ul>');
-	});
+	describe('List Tests', () => {
+		test('Unordered List', () => {
+			expect(parse('. Unordered list item a\n. Unordered list item b\n. Unordered list item c')).toBe('<ul><li>Unordered list item a</li><li>Unordered list item b</li><li>Unordered list item c</li></ul>');
+		});
+		
+		test('Ordered List', () => {
+			expect(parse('1. Ordered list item 1\n2. Ordered list item 2\n3. Ordered list item 3')).toBe('<ol><li>Ordered list item 1</li><li>Ordered list item 2</li><li>Ordered list item 3</li></ol>');
+		});
+	
+		test('List with Nested Items', () => {
+			expect(parse('. doggo\n . doggo')).toBe('<ul><li>doggo<ul><li>doggo</li></ul></li></ul>');
+		});
+	
+		test('List with Ugly Delimiters', () => {
+			expect(parse('. Unordered list item a\n     . Unordered list item b\n            . Unordered list item c')).toBe('<ul><li>Unordered list item a<ul><li>Unordered list item b<ul><li>Unordered list item c</li></ul></li></ul></li></ul>');
+		});
 
-	test('List with Ugly Delimiters', () => {
-		expect(parse('. Unordered list item a\n     . Unordered list item b\n            . Unordered list item c')).toBe('<ul><li>Unordered list item a<ul><li>Unordered list item b<ul><li>Unordered list item c</li></ul></li></ul></li></ul>');
+		test('List with Inline Elements', () => {
+			expect(parse('. list item 1 with *engram{}')).toBe('<ul><li>list item 1 with <engram-link to="engram">engram</engram-link></li></ul>');
+		});
 	});
 	
 	test('Horizontal Rule', () => {
@@ -85,4 +91,3 @@ describe('Inline Element Tests', () => {
 test('Multiple Blocks', () => {
 	expect(parse('Paragraph A\n\nParagraph B\n\nParagraph C')).toBe('<p>Paragraph A</p><p>Paragraph B</p><p>Paragraph C</p>');
 });
-

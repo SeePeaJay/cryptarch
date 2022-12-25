@@ -202,7 +202,9 @@ function treeNodeToHtml(treeNode) {
 		const nodeIsUnordered = node.listItem.startsWith(MARKERS.block.list.unordered);
 		const nodeHasChildren = node.children.length > 0;
 
-		html += `<li>${node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.block.list.unordered : MARKERS.block.list.ordered)), '')}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
+		const blockCore = node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.block.list.unordered : MARKERS.block.list.ordered)), '');
+
+		html += `<li>${blockCoreToHtml(blockCore, 0)}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
 	});
 
 	return html;
