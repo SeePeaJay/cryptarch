@@ -93,7 +93,7 @@ function imageToHtml(image, type) {
 	return `<img src="${image.replace(MARKERS.hybrid.image, '').replace(MARKERS.metadata.container[1], '').replace(MARKERS.metadata.container[2], '')}">`;
 }
 
-function blockCoreToHtml(blockCore, cursor) {
+function blockCoreToHtml(blockCore) {
 	const regex = getRegex('inline');
 	const result = [...blockCore.matchAll(regex)];
 
@@ -102,26 +102,26 @@ function blockCoreToHtml(blockCore, cursor) {
 	}
 
 	let html = '';
-	let updatedCursor = cursor;
+	let cursor = 0;
 
 	result.forEach((match) => {
-		html += blockCore.slice(updatedCursor, match.index).replace('<', '&lt;').replace('>', '&gt;');
-		updatedCursor = match.index;
+		html += blockCore.slice(cursor, match.index).replace('<', '&lt;').replace('>', '&gt;');
+		cursor = match.index;
 
 		if (match[1]) { // alias
 			html += aliasToHtml(match[0]);
 		} else if (match[2]) { // bold
-			html += `<strong>${blockCoreToHtml(match[0].replace(MARKERS.inline.bold, '').replace(MARKERS.inline.bold, ''), 0)}</strong>`;
+			html += `<strong>${blockCoreToHtml(match[0].replace(MARKERS.inline.bold, '').replace(MARKERS.inline.bold, ''))}</strong>`;
 		} else if (match[3]) { // italic
-			html += `<em>${blockCoreToHtml(match[0].replace(MARKERS.inline.italic, '').replace(MARKERS.inline.italic, ''), 0)}</em>`;
+			html += `<em>${blockCoreToHtml(match[0].replace(MARKERS.inline.italic, '').replace(MARKERS.inline.italic, ''))}</em>`;
 		} else if (match[4]) { // underlined
-			html += `<u>${blockCoreToHtml(match[0].replace(MARKERS.inline.underlined, '').replace(MARKERS.inline.underlined, ''), 0)}</u>`;
+			html += `<u>${blockCoreToHtml(match[0].replace(MARKERS.inline.underlined, '').replace(MARKERS.inline.underlined, ''))}</u>`;
 		} else if (match[5]) { // highlighted
-			html += `<mark>${blockCoreToHtml(match[0].replace(MARKERS.inline.highlighted, '').replace(MARKERS.inline.highlighted, ''), 0)}</mark>`;
+			html += `<mark>${blockCoreToHtml(match[0].replace(MARKERS.inline.highlighted, '').replace(MARKERS.inline.highlighted, ''))}</mark>`;
 		} else if (match[6]) { // strikethrough
-			html += `<del>${blockCoreToHtml(match[0].replace(MARKERS.inline.strikethrough, '').replace(MARKERS.inline.strikethrough, ''), 0)}</del>`;
+			html += `<del>${blockCoreToHtml(match[0].replace(MARKERS.inline.strikethrough, '').replace(MARKERS.inline.strikethrough, ''))}</del>`;
 		} else if (match[7]) { // code
-			html += `<code>${blockCoreToHtml(match[0].replace(MARKERS.inline.code[1], '').replace(MARKERS.inline.code[2], ''), 0)}</code>`;
+			html += `<code>${blockCoreToHtml(match[0].replace(MARKERS.inline.code[1], '').replace(MARKERS.inline.code[2], ''))}</code>`;
 		} else if (match[8]) { // autolink
 			html += autolinkToHtml(match[0]);
 		} else if (match[9]) { // inline engram link
@@ -130,10 +130,10 @@ function blockCoreToHtml(blockCore, cursor) {
 			html += imageToHtml(match[0], 'inline');
 		}
 
-		updatedCursor += match[0].length;
+		cursor += match[0].length;
 	});
 
-	html += blockCore.slice(updatedCursor);
+	html += blockCore.slice(cursor);
 
 	return html;
 }
@@ -204,7 +204,7 @@ function treeNodeToHtml(treeNode) {
 
 		const blockCore = node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.block.list.unordered : MARKERS.block.list.ordered)), '');
 
-		html += `<li>${blockCoreToHtml(blockCore, 0)}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
+		html += `<li>${blockCoreToHtml(blockCore)}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
 	});
 
 	return html;
@@ -229,23 +229,23 @@ function rootBlockToHtml(rootBlock) {
 	const result = [...rootBlock.matchAll(regex)];
 
 	if (result.length === 0) {
-		return `<p>${blockCoreToHtml(rootBlock, 0)}</p>`;
+		return `<p>${blockCoreToHtml(rootBlock)}</p>`;
 	}
 
 	if (result[0][1]) { // title block
-		return `<h1>${blockCoreToHtml(result[0][0].replace(MARKERS.block.title, ''), 0)}</h1>`;
+		return `<h1>${blockCoreToHtml(result[0][0].replace(MARKERS.block.title, ''))}</h1>`;
 	}
 
 	if (result[0][2]) { // h1 block
-		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level1, ''), 0)}</h2>`;
+		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level1, ''))}</h2>`;
 	}
 
 	if (result[0][3]) { // h2 block
-		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level2, ''), 0)}</h3>`;
+		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level2, ''))}</h3>`;
 	}
 
 	if (result[0][4]) { // h3 block
-		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level3, ''), 0)}</h4>`;
+		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level3, ''))}</h4>`;
 	}
 
 	if (result[0][5] || result[0][6]) { // list block
