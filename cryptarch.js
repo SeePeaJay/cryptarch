@@ -1,11 +1,15 @@
 const { parse } = require('./parser');
 const {
-	getBlockCore,
 	getBlockBody,
 	getBlockMetadata,
 	getFormattedBlockMetadata,
-	getBlockMetadataBody,
-	getEngramTitleFromLink
+	getMergedBlockMetadata,
+	getBlockMetadataCore,
+	getBlockId,
+	getBlockIdCore,
+	getTitleBlockCore,
+	getEngramTitleFromLink,
+	getBlockIdCoreFromLink,
 } = require('./multi-tool');
 
 function decrypt(engram) {
@@ -14,10 +18,14 @@ function decrypt(engram) {
 
 module.exports = {
 	decrypt,
-	getBlockCore,
 	getBlockBody,
 	getBlockMetadata,
 	getFormattedBlockMetadata,
-	getBlockMetadataBody,
-	getEngramTitleFromLink
+	getMergedBlockMetadata,
+	getBlockMetadataCore,
+	getBlockId,
+	getBlockIdCore,
+	getTitleBlockCore,
+	getEngramTitleFromLink,
+	getBlockIdCoreFromLink,
 };

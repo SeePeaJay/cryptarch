@@ -32,6 +32,16 @@ function getFormattedBlockMetadata(blockMetadata) {
 	).join(' ')} }`; // place Starred in front; should be stable given Node > v12.0.0
 }
 
+function getMergedBlockMetadata(metadata1, metadata2) {
+	const mergedMetadataCore = `${this.getBlockMetadataCore(metadata1)}${this.getBlockMetadataCore(metadata2)}`;
+
+	if (mergedMetadataCore) {
+		return `\n{ ${mergedMetadataCore} }`;
+	}
+
+	return '\n{}';
+}
+
 function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` if contents within
 	if (!this.getBlockMetadata(blockContents)) {
 		return '';
@@ -79,25 +89,15 @@ function getBlockIdCoreFromLink(engramLink) {
 	return ''; // if tag, return nothing
 }
 
-function getMergedBlockMetadata(metadata1, metadata2) {
-	const mergedMetadataCore = `${this.getBlockMetadataCore(metadata1)}${this.getBlockMetadataCore(metadata2)}`;
-
-	if (mergedMetadataCore) {
-		return `\n{ ${mergedMetadataCore} }`;
-	}
-
-	return '\n{}';
-}
-
 module.exports = {
 	getBlockBody,
 	getBlockMetadata,
 	getFormattedBlockMetadata,
+	getMergedBlockMetadata,
 	getBlockMetadataCore,
 	getBlockId,
 	getBlockIdCore,
 	getTitleBlockCore,
 	getEngramTitleFromLink,
 	getBlockIdCoreFromLink,
-	getMergedBlockMetadata,
 };
