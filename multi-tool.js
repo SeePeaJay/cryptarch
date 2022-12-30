@@ -1,5 +1,5 @@
 function getBlockBody(blockContents) { // includes both the block marker and the body/text
-	const blockMetadata = this.getBlockMetadata(blockContents);
+	const blockMetadata = getBlockMetadata(blockContents);
 
 	if (blockMetadata) {
 		return blockContents.slice(0, blockContents.indexOf(blockMetadata));
@@ -33,7 +33,7 @@ function getFormattedBlockMetadata(blockMetadata) {
 }
 
 function getMergedBlockMetadata(metadata1, metadata2) {
-	const mergedMetadataCore = `${this.getBlockMetadataCore(metadata1)}${this.getBlockMetadataCore(metadata2)}`;
+	const mergedMetadataCore = `${getBlockMetadataCore(metadata1)}${getBlockMetadataCore(metadata2)}`;
 
 	if (mergedMetadataCore) {
 		return `\n{ ${mergedMetadataCore} }`;
@@ -43,15 +43,15 @@ function getMergedBlockMetadata(metadata1, metadata2) {
 }
 
 function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` if contents within
-	if (!this.getBlockMetadata(blockContents)) {
+	if (!getBlockMetadata(blockContents)) {
 		return '';
 	}
 
-	return this.getBlockMetadata(blockContents).slice(3, -2); // TODO: ref magic num
+	return getBlockMetadata(blockContents).slice(3, -2); // TODO: ref magic num
 }
 
 function getBlockId(blockContents) { // TODO: check if this is needed
-	const matchedBlockId = this.getBlockMetadataCore(blockContents).match(/::.{6}(?=\s|$)/); // TODO: ref
+	const matchedBlockId = getBlockMetadataCore(blockContents).match(/::.{6}(?=\s|$)/); // TODO: ref
 
 	if (!matchedBlockId) {
 		return ''; // empty string is easier to work with
@@ -61,11 +61,11 @@ function getBlockId(blockContents) { // TODO: check if this is needed
 }
 
 function getBlockIdCore(blockContents) { // TODO: check if this is needed
-	return this.getBlockId(blockContents).slice(2); // get rid of block id marker (::)
+	return getBlockId(blockContents).slice(2); // get rid of block id marker (::)
 }
 
 function getTitleBlockCore(titleBlockContents) { // TODO: check compatability
-	return this.getBlockBody(titleBlockContents).slice(2); // get rid of title marker; have not renamed yet at this line in time
+	return getBlockBody(titleBlockContents).slice(2); // get rid of title marker; have not renamed yet at this line in time
 }
 
 function getEngramTitleFromLink(engramLink) {
