@@ -121,4 +121,4 @@ const RULES = {
 	}
 };
 
-module.exports = { MARKERS, RULES };
+module.exports = { MARKERS, RULES, escapeRegExp };
