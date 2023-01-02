@@ -39,7 +39,7 @@ const MARKERS = {
 
 	hybrid: {
 		engramLink: {
-			engramLink: '*',
+			default: '*',
 			tag: '#',
 		},
 		image: '$',
@@ -50,7 +50,10 @@ const MARKERS = {
 			1: '{',
 			2: '}',
 		},
-		delimiter: ',',
+		delimiter: {
+			item: ',',
+			container: '\n',
+		},
 		blockId: '::',
 	},
 };
@@ -102,8 +105,8 @@ const RULES = {
 
 	hybrid: {
 		engramLink: {
-			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.engramLink.engramLink)}.+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}$`),
-			inline: new RegExp(`(?:${escapeRegExp(MARKERS.hybrid.engramLink.engramLink)}|${escapeRegExp(MARKERS.hybrid.engramLink.tag)}).+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}`),
+			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.engramLink.default)}.+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}$`),
+			inline: new RegExp(`(?:${escapeRegExp(MARKERS.hybrid.engramLink.default)}|${escapeRegExp(MARKERS.hybrid.engramLink.tag)}).+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}`), // TODO: pretty sure [^\\n] === .
 		},
 		image: {
 			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.image)}[^\\s]+?${escapeRegExp(MARKERS.metadata.container[1])}${escapeRegExp(MARKERS.metadata.container[2])}$`),

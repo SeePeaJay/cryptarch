@@ -62,9 +62,9 @@ function autolinkToHtml(autolink) {
 }
 
 function engramLinkToHtml(engramLink, type) {
-	if (type && engramLink.startsWith(MARKERS.hybrid.engramLink.engramLink)) {
+	if (type && engramLink.startsWith(MARKERS.hybrid.engramLink.default)) {
 		const splitEngramLink = engramLink.split(MARKERS.metadata.container[1]);
-		const engramLinkTitle = splitEngramLink[0].replace(MARKERS.hybrid.engramLink.engramLink, '');
+		const engramLinkTitle = splitEngramLink[0].replace(MARKERS.hybrid.engramLink.default, '');
 		const engramLinkMetadataCore = splitEngramLink[1].replace(MARKERS.metadata.container[2], '');
 		const blockIdMatch = engramLinkMetadataCore.match(RULES.metadata.blockId);
 
