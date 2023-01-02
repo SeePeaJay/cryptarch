@@ -106,7 +106,7 @@ const RULES = {
 	hybrid: {
 		engramLink: {
 			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.engramLink.default)}.+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}$`),
-			inline: new RegExp(`(?:${escapeRegExp(MARKERS.hybrid.engramLink.default)}|${escapeRegExp(MARKERS.hybrid.engramLink.tag)}).+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}`), // TODO: pretty sure [^\\n] === .
+			inline: new RegExp(`(?:${escapeRegExp(MARKERS.hybrid.engramLink.default)}|${escapeRegExp(MARKERS.hybrid.engramLink.tag)})[^#*\n]+?${escapeRegExp(MARKERS.metadata.container[1])}.*?${escapeRegExp(MARKERS.metadata.container[2])}`), // [^#*\n] to prevent detecting normal usage of * and #
 		},
 		image: {
 			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.image)}[^\\s]+?${escapeRegExp(MARKERS.metadata.container[1])}${escapeRegExp(MARKERS.metadata.container[2])}$`),
