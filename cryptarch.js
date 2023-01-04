@@ -1,3 +1,4 @@
+const { MARKERS, MARKER_REGEX, RULES, escapeRegExp } = require('./constants');
 const { parse } = require('./parser');
 const {
 	getBlockBody,
@@ -11,7 +12,6 @@ const {
 	getEngramTitleFromLink,
 	getBlockIdCoreFromLink,
 } = require('./multi-tool');
-const { MARKERS, RULES, escapeRegExp } = require('./constants');
 
 function decrypt(engram) {
 	return parse(engram);
@@ -19,6 +19,7 @@ function decrypt(engram) {
 
 module.exports = {
 	MARKERS,
+	MARKER_REGEX,
 	RULES,
 	escapeRegExp,
 

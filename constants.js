@@ -1,3 +1,12 @@
+function getMappedObject(obj, func) { // https://stackoverflow.com/a/38829074
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => 
+      [k, v === Object(v) ? getMappedObject(v, func) : func(v)]
+    )
+  );
+	// TODO: do sth about ordered list regex if it's needed in the future?
+}
+
 const MARKERS = {
 	rootBlockDelimiter: '\n\n',
 
@@ -10,7 +19,7 @@ const MARKERS = {
 		},
 		list: {
 			unordered: '. ',
-			ordered: '\\d{1,9}\\. ', // need to escape backslash character; TODO: convert to regex?
+			ordered: '\\d{1,9}\\. ', // TODO: only include the dot or equivalent in the future; the number should remain the same
 			itemDelimiter: '\n',
 		},
 		horizontalRule: '---',
@@ -54,69 +63,73 @@ const MARKERS = {
 	},
 };
 
+// In case a marker is needed in its regex form.
+const MARKER_REGEX = getMappedObject(MARKERS, (x) => new RegExp(escapeRegExp(x)));
+
+// Checks if a given (part of an) engram is one of the following elements.
 const RULES = {
-	/*
-		This pattern is designed to match against the whole engram.
-	*/
+	// This pattern is designed to match against the whole engram.
 	rootBlockDelimiter: new RegExp(`${escapeRegExp(MARKERS.rootBlockDelimiter[0])}(?: |\\t)*${escapeRegExp(MARKERS.rootBlockDelimiter[1])}`),
 
-	/*
-		Block rules are designed to match against a block.
-		As of this writing, tabs should not count as indent, so they are excluded from the rules for now.
-	*/
+	// Block patterns are designed to match against a block.
+	// As of this writing, tabs should not count as indent, so they are excluded from the patterns for now.
 	block: {
-		title: new RegExp(`^${escapeRegExp(MARKERS.block.title)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		title: new RegExp(`^${MARKER_REGEX.block.title.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
 		subtitle: {
-			level1: new RegExp(`^${escapeRegExp(MARKERS.block.subtitle.level1)}(?:.|\\n(?! *\\n)(?! *$))+$`),
-			level2: new RegExp(`^${escapeRegExp(MARKERS.block.subtitle.level2)}(?:.|\\n(?! *\\n)(?! *$))+$`),
-			level3: new RegExp(`^${escapeRegExp(MARKERS.block.subtitle.level3)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+			level1: new RegExp(`^${MARKER_REGEX.block.subtitle.level1.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
+			level2: new RegExp(`^${MARKER_REGEX.block.subtitle.level2.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
+			level3: new RegExp(`^${MARKER_REGEX.block.subtitle.level3.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
 		},
 		list: {
-			unordered: new RegExp(`^${escapeRegExp(MARKERS.block.list.unordered)}(?:.|\\n(?! *\\n)(?! *$))+$`),
+			unordered: new RegExp(`^${MARKER_REGEX.block.list.unordered.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
 			ordered: new RegExp(`^${MARKERS.block.list.ordered}(?:.|\\n(?! *\\n)(?! *$))+$`),
-
-			/*
-				This specific pattern is designed to match against a list only.
-				Translation: match newline w/ n spaces, as long as a proper list item follows.
-			*/
-			itemDelimiter: new RegExp(`${escapeRegExp(MARKERS.block.list.itemDelimiter)} *(?=(?:\\d{1,9})?\\. (?! *${escapeRegExp(MARKERS.block.list.itemDelimiter)}| *$))`)
+			
+			// This specific pattern is designed to match against a list only.
+			// Translation: match newline w/ n spaces, as long as a proper list item follows.
+			itemDelimiter: new RegExp(`${MARKER_REGEX.block.list.itemDelimiter.source} *(?=(?:\\d{1,9})?\\. (?! *${MARKER_REGEX.block.list.itemDelimiter.source}| *$))`),
 		},
-		horizontalRule: new RegExp(`^${escapeRegExp(MARKERS.block.horizontalRule)}[^\\S\\n]*$`),
+		horizontalRule: new RegExp(`^${MARKER_REGEX.block.horizontalRule.source}[^\\S\\n]*$`),
 	},
 
-	/*
-		Inline rules are designed to match against text; tabs and spaces may count as text for now.
-	*/
+	// Inline patterns are designed to match against text; tabs and spaces may count as text for now.
 	inline: {
-		alias: new RegExp(`${escapeRegExp(MARKERS.inline.alias[1])}.+?${escapeRegExp(MARKERS.inline.alias[2])}.+?${escapeRegExp(MARKERS.inline.alias[3])}`),
-		bold: new RegExp(`${escapeRegExp(MARKERS.inline.bold)}.+?${escapeRegExp(MARKERS.inline.bold)}`),
-		italic: new RegExp(`${escapeRegExp(MARKERS.inline.italic)}.+?${escapeRegExp(MARKERS.inline.italic)}`),
-		underlined: new RegExp(`${escapeRegExp(MARKERS.inline.underlined)}.+?${escapeRegExp(MARKERS.inline.underlined)}`),
-		highlighted: new RegExp(`${escapeRegExp(MARKERS.inline.highlighted)}.+?${escapeRegExp(MARKERS.inline.highlighted)}`),
-		strikethrough: new RegExp(`${escapeRegExp(MARKERS.inline.strikethrough)}.+?${escapeRegExp(MARKERS.inline.strikethrough)}`),
-		code: new RegExp(`${escapeRegExp(MARKERS.inline.code[1])}.+?${escapeRegExp(MARKERS.inline.code[2])}`),
+		alias: new RegExp(`${MARKER_REGEX.inline.alias[1].source}.+?${MARKER_REGEX.inline.alias[2].source}.+?${MARKER_REGEX.inline.alias[3].source}`),
+		bold: new RegExp(`${MARKER_REGEX.inline.bold.source}.+?${MARKER_REGEX.inline.bold.source}`),
+		italic: new RegExp(`${MARKER_REGEX.inline.italic.source}.+?${MARKER_REGEX.inline.italic.source}`),
+		underlined: new RegExp(`${MARKER_REGEX.inline.underlined.source}.+?${MARKER_REGEX.inline.underlined.source}`),
+		highlighted: new RegExp(`${MARKER_REGEX.inline.highlighted.source}.+?${MARKER_REGEX.inline.highlighted.source}`),
+		strikethrough: new RegExp(`${MARKER_REGEX.inline.strikethrough.source}.+?${MARKER_REGEX.inline.strikethrough.source}`),
+		code: new RegExp(`${MARKER_REGEX.inline.code[1].source}.+?${MARKER_REGEX.inline.code[2].source}`),
 
 		autolink: /(?:https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/, // added non-capturing group
 	},
 
 	hybrid: {
 		engramLink: {
-			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.engramLink.default)}.+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}$`),
-			inline: new RegExp(`(?:${escapeRegExp(MARKERS.hybrid.engramLink.default)}|${escapeRegExp(MARKERS.hybrid.engramLink.tag)})[^#*\n]+?${escapeRegExp(MARKERS.metadata.container[1])}.*?${escapeRegExp(MARKERS.metadata.container[2])}`), // for the time being, [^#*\n] prevents detecting normal usage of * and #, which may actually be ok (if using files as storage, special characters need to be avoided anyway)
+			block: new RegExp(
+				`^${MARKER_REGEX.hybrid.engramLink.default.source}.+?${MARKER_REGEX.metadata.container[1].source}[^\\n]*?${MARKER_REGEX.metadata.container[2].source}$`
+			),
+			inline: new RegExp(
+				`(?:${MARKER_REGEX.hybrid.engramLink.default.source}|${MARKER_REGEX.hybrid.engramLink.tag.source})[^#*\n]+?${MARKER_REGEX.metadata.container[1].source}.*?${MARKER_REGEX.metadata.container[2].source}`
+			), // for the time being, [^#*\n] prevents detecting normal usage of * and #, which may actually be ok (if using files as storage, special characters need to be avoided anyway)
 		},
 		image: {
-			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.image)}[^\\s]+?${escapeRegExp(MARKERS.metadata.container[1])}${escapeRegExp(MARKERS.metadata.container[2])}$`),
-			inline: new RegExp(`${escapeRegExp(MARKERS.hybrid.image)}[^\\s]+?${escapeRegExp(MARKERS.metadata.container[1])}${escapeRegExp(MARKERS.metadata.container[2])}`),
+			block: new RegExp(
+				`^${MARKER_REGEX.hybrid.image.source}[^\\s]+?${MARKER_REGEX.metadata.container[1].source}${MARKER_REGEX.metadata.container[2].source}$`
+			),
+			inline: new RegExp(
+				`${MARKER_REGEX.hybrid.image.source}[^\\s]+?${MARKER_REGEX.metadata.container[1].source}${MARKER_REGEX.metadata.container[2].source}`
+			),
 		},
 	},
 	
 	metadata: {
-		block: new RegExp(`\\n${escapeRegExp(MARKERS.metadata.container[1])}[\\S\\s]*${escapeRegExp(MARKERS.metadata.container[2])}`),
+		block: new RegExp(
+			`\\n${MARKER_REGEX.metadata.container[1].source}[\\S\\s]*${MARKER_REGEX.metadata.container[2].source}`
+		),
 
-		/*
-			This pattern is designed to match against engram link metadata.
-		*/
-		blockId: new RegExp(`${MARKERS.metadata.blockId}[A-Za-z0-9_-]{6}`), // https://github.com/ai/nanoid#api
+		// This pattern is designed to match against engram link metadata.
+		blockId: new RegExp(`${MARKER_REGEX.metadata.blockId.source}[A-Za-z0-9_-]{6}`), // https://github.com/ai/nanoid#api
 	}
 };
 
@@ -162,4 +175,4 @@ function getAllRules(type) {
 	return new RegExp(patternSource, 'g');
 }
 
-module.exports = { MARKERS, RULES, escapeRegExp, getAllRules };
+module.exports = { MARKERS, MARKER_REGEX, RULES, escapeRegExp, getAllRules };
