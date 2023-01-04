@@ -1,7 +1,3 @@
-function escapeRegExp(string) { // https://stackoverflow.com/a/6969486
-	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
 const MARKERS = {
 	rootBlockDelimiter: '\n\n',
 
@@ -106,7 +102,7 @@ const RULES = {
 	hybrid: {
 		engramLink: {
 			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.engramLink.default)}.+?${escapeRegExp(MARKERS.metadata.container[1])}[^\\n]*?${escapeRegExp(MARKERS.metadata.container[2])}$`),
-			inline: new RegExp(`(?:${escapeRegExp(MARKERS.hybrid.engramLink.default)}|${escapeRegExp(MARKERS.hybrid.engramLink.tag)})[^#*\n]+?${escapeRegExp(MARKERS.metadata.container[1])}.*?${escapeRegExp(MARKERS.metadata.container[2])}`), // [^#*\n] to prevent detecting normal usage of * and #
+			inline: new RegExp(`(?:${escapeRegExp(MARKERS.hybrid.engramLink.default)}|${escapeRegExp(MARKERS.hybrid.engramLink.tag)})[^#*\n]+?${escapeRegExp(MARKERS.metadata.container[1])}.*?${escapeRegExp(MARKERS.metadata.container[2])}`), // for the time being, [^#*\n] prevents detecting normal usage of * and #, which may actually be ok (if using files as storage, special characters need to be avoided anyway)
 		},
 		image: {
 			block: new RegExp(`^${escapeRegExp(MARKERS.hybrid.image)}[^\\s]+?${escapeRegExp(MARKERS.metadata.container[1])}${escapeRegExp(MARKERS.metadata.container[2])}$`),
@@ -124,4 +120,46 @@ const RULES = {
 	}
 };
 
-module.exports = { MARKERS, RULES, escapeRegExp };
+function escapeRegExp(string) { // https://stackoverflow.com/a/6969486
+	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+function getAllRules(type) {
+	let allRules;
+	if (type === 'block') {
+		allRules = [
+			RULES.block.title, // 1
+			RULES.block.subtitle.level1, // 2
+			RULES.block.subtitle.level2, // 3
+			RULES.block.subtitle.level3, // 4
+			RULES.block.list.unordered, // 5
+			RULES.block.list.ordered, // 6
+			RULES.block.horizontalRule, // 7
+			RULES.hybrid.engramLink.block, // 8
+			RULES.hybrid.image.block, // 9
+		];
+	} else {
+		allRules = [
+			RULES.inline.alias, // 1
+			RULES.inline.bold, // 2
+			RULES.inline.italic, // 3
+			RULES.inline.underlined, // 4
+			RULES.inline.highlighted, // 5
+			RULES.inline.strikethrough, // 6
+			RULES.inline.code, // 7
+			RULES.inline.autolink, // 8
+			RULES.hybrid.engramLink.inline, // 9
+			RULES.hybrid.image.inline, // 10
+		];
+	}
+
+	let patternString = '';
+	allRules.forEach((rule) => {
+		patternString += `(${rule.source})|`; // add capture group here
+	});
+	patternString = patternString.slice(0, -1);
+
+	return new RegExp(patternString, 'g');
+}
+
+module.exports = { MARKERS, RULES, escapeRegExp, getAllRules };

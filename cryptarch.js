@@ -2,6 +2,7 @@ const { parse } = require('./parser');
 const {
 	getBlockBody,
 	getBlockMetadata,
+	getBlockCore,
 	getFormattedBlockMetadata,
 	getMergedBlockMetadata,
 	getBlockMetadataCore,
@@ -24,6 +25,7 @@ module.exports = {
 
 	getBlockBody,
 	getBlockMetadata,
+	getBlockCore,
 	getFormattedBlockMetadata,
 	getMergedBlockMetadata,
 	getBlockMetadataCore,

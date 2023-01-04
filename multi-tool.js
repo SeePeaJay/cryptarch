@@ -1,3 +1,5 @@
+const { getAllRules } = require('./constants');
+
 function getBlockBody(blockContents) { // includes both the block marker and the body/text
 	const blockMetadata = getBlockMetadata(blockContents);
 
@@ -16,6 +18,20 @@ function getBlockMetadata(blockContents) { // both \n and brackets {} are includ
 	}
 
 	return '';
+}
+
+function getBlockCore(blockContents) {
+	const blockBody = getBlockBody(blockContents);
+
+	const blockRegex = getAllRules('block');
+
+	const blockMarker = blockBody.match(blockRegex) ? blockBody.match(blockRegex)[0] : undefined;
+
+	if (blockMarker) {
+		return blockBody.replace(blockMarker, '');
+	}
+
+	return blockBody;
 }
 
 function getFormattedBlockMetadata(blockMetadata) {
@@ -92,6 +108,7 @@ function getBlockIdCoreFromLink(engramLink) {
 module.exports = {
 	getBlockBody,
 	getBlockMetadata,
+	getBlockCore,
 	getFormattedBlockMetadata,
 	getMergedBlockMetadata,
 	getBlockMetadataCore,

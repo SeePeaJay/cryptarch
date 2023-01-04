@@ -1,42 +1,4 @@
-const { MARKERS, RULES } = require('./constants');
-
-function getRegex(type) {
-	let allRules;
-	if (type === 'block') {
-		allRules = [
-			RULES.block.title, // 1
-			RULES.block.subtitle.level1, // 2
-			RULES.block.subtitle.level2, // 3
-			RULES.block.subtitle.level3, // 4
-			RULES.block.list.unordered, // 5
-			RULES.block.list.ordered, // 6
-			RULES.block.horizontalRule, // 7
-			RULES.hybrid.engramLink.block, // 8
-			RULES.hybrid.image.block, // 9
-		];
-	} else {
-		allRules = [
-			RULES.inline.alias, // 1
-			RULES.inline.bold, // 2
-			RULES.inline.italic, // 3
-			RULES.inline.underlined, // 4
-			RULES.inline.highlighted, // 5
-			RULES.inline.strikethrough, // 6
-			RULES.inline.code, // 7
-			RULES.inline.autolink, // 8
-			RULES.hybrid.engramLink.inline, // 9
-			RULES.hybrid.image.inline, // 10
-		];
-	}
-
-	let patternString = '';
-	allRules.forEach((rule) => {
-		patternString += `(${rule.source})|`; // add capture group here
-	});
-	patternString = patternString.slice(0, -1);
-
-	return new RegExp(patternString, 'g');
-}
+const { MARKERS, RULES, getAllRules } = require('./constants');
 
 function getUrlWithProtocol(url) {
 	const httpPattern = /^((http|https|ftp):\/\/)/;
@@ -94,7 +56,7 @@ function imageToHtml(image, type) {
 }
 
 function blockCoreToHtml(blockCore) {
-	const regex = getRegex('inline');
+	const regex = getAllRules('inline');
 	const result = [...blockCore.matchAll(regex)];
 
 	if (result.length === 0) {
@@ -224,7 +186,7 @@ function listToHtml(list) {
 }
 
 function rootBlockToHtml(rootBlock) {
-	const regex = getRegex('block');
+	const regex = getAllRules('block');
 
 	const result = [...rootBlock.matchAll(regex)];
 
