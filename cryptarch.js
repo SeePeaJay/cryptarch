@@ -8,7 +8,6 @@ const {
 	getBlockMetadataCore,
 	getBlockId,
 	getBlockIdCore,
-	getTitleBlockCore,
 	getEngramTitleFromLink,
 	getBlockIdCoreFromLink,
 } = require('./multi-tool');
@@ -31,7 +30,6 @@ module.exports = {
 	getBlockMetadataCore,
 	getBlockId,
 	getBlockIdCore,
-	getTitleBlockCore,
 	getEngramTitleFromLink,
 	getBlockIdCoreFromLink,
 

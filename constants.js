@@ -153,13 +153,13 @@ function getAllRules(type) {
 		];
 	}
 
-	let patternString = '';
+	let patternSource = '';
 	allRules.forEach((rule) => {
-		patternString += `(${rule.source})|`; // add capture group here
+		patternSource += `(${rule.source})|`; // add capture group here
 	});
-	patternString = patternString.slice(0, -1);
+	patternSource = patternSource.slice(0, -1);
 
-	return new RegExp(patternString, 'g');
+	return new RegExp(patternSource, 'g');
 }
 
 module.exports = { MARKERS, RULES, escapeRegExp, getAllRules };

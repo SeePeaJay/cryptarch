@@ -80,10 +80,6 @@ function getBlockIdCore(blockContents) { // TODO: check if this is needed
 	return getBlockId(blockContents).slice(2); // get rid of block id marker (::)
 }
 
-function getTitleBlockCore(titleBlockContents) { // TODO: check compatability
-	return getBlockBody(titleBlockContents).slice(2); // get rid of title marker; have not renamed yet at this line in time
-}
-
 function getEngramTitleFromLink(engramLink) {
 	if (engramLink.startsWith('*')) { // get rid of * and metadata
 		return engramLink.slice(1, /{.*?}/.exec(engramLink).index); // TODO: ref magic num
@@ -114,7 +110,6 @@ module.exports = {
 	getBlockMetadataCore,
 	getBlockId,
 	getBlockIdCore,
-	getTitleBlockCore,
 	getEngramTitleFromLink,
 	getBlockIdCoreFromLink,
 };
