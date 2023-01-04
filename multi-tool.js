@@ -1,4 +1,4 @@
-const { getAllRules } = require('./constants');
+const { MARKERS, MARKER_REGEX } = require('./constants');
 
 function getBlockBody(blockContents) { // includes both the block marker and the body/text
 	const blockMetadata = getBlockMetadata(blockContents);
@@ -22,9 +22,9 @@ function getBlockMetadata(blockContents) { // both \n and brackets {} are includ
 
 function getBlockCore(blockContents) {
 	const blockBody = getBlockBody(blockContents);
-
-	const blockRegex = getAllRules('block');
-
+	const blockRegex = new RegExp(
+		`(?:${MARKER_REGEX.block.title.source}|${MARKER_REGEX.block.subtitle.level1.source}|${MARKER_REGEX.block.subtitle.level2.source}|${MARKER_REGEX.block.subtitle.level3.source}|${MARKER_REGEX.block.list.unordered.source}|${MARKERS.block.list.ordered})`,
+	);
 	const blockMarker = blockBody.match(blockRegex) ? blockBody.match(blockRegex)[0] : undefined;
 
 	if (blockMarker) {
