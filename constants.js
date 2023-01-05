@@ -8,20 +8,13 @@ function getMappedObject(obj, func) { // https://stackoverflow.com/a/38829074
 }
 
 const MARKERS = {
-	rootBlockDelimiter: '\n\n',
-
 	block: {
 		title: '* ',
-		subtitle: {
-			level1: '*_1 ', // https://www.quora.com/What-is-the-difference-between-Title-and-Heading-1-styles-in-a-word-processor
-			level2: '*_2 ',
-			level3: '*_3 ',
-		},
-		list: {
-			unordered: '. ',
-			ordered: '\\d{1,9}\\. ', // TODO: only include the dot or equivalent in the future; the number should remain the same
-			itemDelimiter: '\n',
-		},
+		level1Subtitle: '*_1 ',// https://www.quora.com/What-is-the-difference-between-Title-and-Heading-1-styles-in-a-word-processor
+		level2Subtitle: '*_2 ',
+		level3Subtitle: '*_3 ',
+		unorderedList: '. ',
+		orderedList: '\\d{1,9}\\. ', // TODO: only include the dot or equivalent in the future; the number should remain the same
 		horizontalRule: '---',
 	},
 
@@ -55,12 +48,13 @@ const MARKERS = {
 			1: '{',
 			2: '}',
 		},
-		delimiter: {
-			item: ',',
-			container: '\n',
-		},
 		blockId: '::',
 	},
+
+	delimiter: {
+		rootBlock: '\n\n',
+		containerItem: '\n', // item - an item within a list, or more generally a block within a root/container block, or metadata within a block
+	}
 };
 
 // In case a marker is needed in its regex form.
@@ -68,26 +62,15 @@ const MARKER_REGEX = getMappedObject(MARKERS, (x) => new RegExp(escapeRegExp(x))
 
 // Checks if a given (part of an) engram is one of the following elements.
 const RULES = {
-	// This pattern is designed to match against the whole engram.
-	rootBlockDelimiter: new RegExp(`${escapeRegExp(MARKERS.rootBlockDelimiter[0])}(?: |\\t)*${escapeRegExp(MARKERS.rootBlockDelimiter[1])}`),
-
 	// Block patterns are designed to match against a block.
 	// As of this writing, tabs should not count as indent, so they are excluded from the patterns for now.
 	block: {
 		title: new RegExp(`^${MARKER_REGEX.block.title.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
-		subtitle: {
-			level1: new RegExp(`^${MARKER_REGEX.block.subtitle.level1.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
-			level2: new RegExp(`^${MARKER_REGEX.block.subtitle.level2.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
-			level3: new RegExp(`^${MARKER_REGEX.block.subtitle.level3.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
-		},
-		list: {
-			unordered: new RegExp(`^${MARKER_REGEX.block.list.unordered.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
-			ordered: new RegExp(`^${MARKERS.block.list.ordered}(?:.|\\n(?! *\\n)(?! *$))+$`),
-			
-			// This specific pattern is designed to match against a list only.
-			// Translation: match newline w/ n spaces, as long as a proper list item follows.
-			itemDelimiter: new RegExp(`${MARKER_REGEX.block.list.itemDelimiter.source} *(?=(?:\\d{1,9})?\\. (?! *${MARKER_REGEX.block.list.itemDelimiter.source}| *$))`),
-		},
+		level1Subtitle: new RegExp(`^${MARKER_REGEX.block.level1Subtitle.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		level2Subtitle: new RegExp(`^${MARKER_REGEX.block.level2Subtitle.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		level3Subtitle: new RegExp(`^${MARKER_REGEX.block.level3Subtitle.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		unorderedList: new RegExp(`^${MARKER_REGEX.block.unorderedList.source}(?:.|\\n(?! *\\n)(?! *$))+$`),
+		orderedList: new RegExp(`^${MARKERS.block.orderedList}(?:.|\\n(?! *\\n)(?! *$))+$`),
 		horizontalRule: new RegExp(`^${MARKER_REGEX.block.horizontalRule.source}[^\\S\\n]*$`),
 	},
 
@@ -108,7 +91,7 @@ const RULES = {
 		engramLink: {
 			block: new RegExp(
 				`^${MARKER_REGEX.hybrid.engramLink.default.source}.+?${MARKER_REGEX.metadata.container[1].source}[^\\n]*?${MARKER_REGEX.metadata.container[2].source}$`
-			),
+			), // TODO: should block version also restrict * and # in title?
 			inline: new RegExp(
 				`(?:${MARKER_REGEX.hybrid.engramLink.default.source}|${MARKER_REGEX.hybrid.engramLink.tag.source})[^#*\n]+?${MARKER_REGEX.metadata.container[1].source}.*?${MARKER_REGEX.metadata.container[2].source}`
 			), // for the time being, [^#*\n] prevents detecting normal usage of * and #, which may actually be ok (if using files as storage, special characters need to be avoided anyway)
@@ -129,7 +112,15 @@ const RULES = {
 		),
 
 		// This pattern is designed to match against engram link metadata.
-		blockId: new RegExp(`${MARKER_REGEX.metadata.blockId.source}[A-Za-z0-9_-]{6}`), // https://github.com/ai/nanoid#api
+		blockId: new RegExp(`${MARKER_REGEX.metadata.blockId.source}[A-Za-z0-9_-]{6}(?=\\s|$)`), // https://github.com/ai/nanoid#api
+	},
+
+	delimiter: {
+		rootBlock: new RegExp(`${escapeRegExp(MARKERS.delimiter.rootBlock[0])}(?: |\\t)*${escapeRegExp(MARKERS.delimiter.rootBlock[1])}`), // This pattern is designed to match against the whole engram.
+
+		// This specific pattern is designed to match against a list only.
+		// Translation: match newline w/ n spaces, as long as a proper list item follows.
+		listItem: new RegExp(`${MARKER_REGEX.delimiter.containerItem.source} *(?=(?:\\d{1,9})?\\. (?! *${MARKER_REGEX.delimiter.containerItem.source}| *$))`),
 	}
 };
 
@@ -142,11 +133,11 @@ function getAllRules(type) {
 	if (type === 'block') {
 		allRules = [
 			RULES.block.title, // 1
-			RULES.block.subtitle.level1, // 2
-			RULES.block.subtitle.level2, // 3
-			RULES.block.subtitle.level3, // 4
-			RULES.block.list.unordered, // 5
-			RULES.block.list.ordered, // 6
+			RULES.block.level1Subtitle, // 2
+			RULES.block.level2Subtitle, // 3
+			RULES.block.level3Subtitle, // 4
+			RULES.block.unorderedList, // 5
+			RULES.block.orderedList, // 6
 			RULES.block.horizontalRule, // 7
 			RULES.hybrid.engramLink.block, // 8
 			RULES.hybrid.image.block, // 9

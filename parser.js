@@ -103,15 +103,15 @@ function blockCoreToHtml(blockCore) {
 function getListTree(list) {
 	// "beautify" list item delimiters
 	let prevItemLevel = 0;
-	const listItemsAndDelimiters = list.split(new RegExp(`(${RULES.block.list.itemDelimiter.source})`)).map((e) => {
-		if (e.startsWith(MARKERS.block.list.itemDelimiter)) {
-			let currItemLevel = e.replace(MARKERS.block.list.itemDelimiter, '').length;
+	const listItemsAndDelimiters = list.split(new RegExp(`(${RULES.delimiter.listItem.source})`)).map((e) => {
+		if (e.startsWith(MARKERS.delimiter.containerItem)) {
+			let currItemLevel = e.replace(MARKERS.delimiter.containerItem, '').length;
 
 			if (currItemLevel > prevItemLevel) {
 				currItemLevel = prevItemLevel + 1;
 				prevItemLevel = currItemLevel;
 
-				return `${MARKERS.block.list.itemDelimiter}${' '.repeat(currItemLevel)}`;
+				return `${MARKERS.delimiter.containerItem}${' '.repeat(currItemLevel)}`;
 			}
 
 			prevItemLevel = currItemLevel;
@@ -123,7 +123,7 @@ function getListTree(list) {
 	// create flattenedListTree for actual listTree below
 	const flattenedListTree = [{ listItem: listItemsAndDelimiters[0], level: 0, id: '1', parentId: '0' }];
 	for (let i = 2; i < listItemsAndDelimiters.length; i += 2) {
-		const currItemLevel = listItemsAndDelimiters[i - 1].replace(MARKERS.block.list.itemDelimiter, '').length;
+		const currItemLevel = listItemsAndDelimiters[i - 1].replace(MARKERS.delimiter.containerItem, '').length;
 		const lowerLevelElements = flattenedListTree.filter((e) => e.level === currItemLevel - 1);
 
 		flattenedListTree.push({
@@ -161,10 +161,10 @@ function treeNodeToHtml(treeNode) {
 	let html = '';
 
 	treeNode.forEach((node) => {
-		const nodeIsUnordered = node.listItem.startsWith(MARKERS.block.list.unordered);
+		const nodeIsUnordered = node.listItem.startsWith(MARKERS.block.unorderedList);
 		const nodeHasChildren = node.children.length > 0;
 
-		const blockCore = node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.block.list.unordered : MARKERS.block.list.ordered)), '');
+		const blockCore = node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.block.unorderedList : MARKERS.block.orderedList)), '');
 
 		html += `<li>${blockCoreToHtml(blockCore)}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
 	});
@@ -173,7 +173,7 @@ function treeNodeToHtml(treeNode) {
 }
 
 function treeToHtml(tree) {
-	if (tree[0].listItem.startsWith(MARKERS.block.list.unordered)) {
+	if (tree[0].listItem.startsWith(MARKERS.block.unorderedList)) {
 		return `<ul>${treeNodeToHtml(tree)}</ul>`;
 	}
 
@@ -199,15 +199,15 @@ function rootBlockToHtml(rootBlock) {
 	}
 
 	if (result[0][2]) { // h1 block
-		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level1, ''))}</h2>`;
+		return `<h2>${blockCoreToHtml(result[0][0].replace(MARKERS.block.level1Subtitle, ''))}</h2>`;
 	}
 
 	if (result[0][3]) { // h2 block
-		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level2, ''))}</h3>`;
+		return `<h3>${blockCoreToHtml(result[0][0].replace(MARKERS.block.level2Subtitle, ''))}</h3>`;
 	}
 
 	if (result[0][4]) { // h3 block
-		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.block.subtitle.level3, ''))}</h4>`;
+		return `<h4>${blockCoreToHtml(result[0][0].replace(MARKERS.block.level3Subtitle, ''))}</h4>`;
 	}
 
 	if (result[0][5] || result[0][6]) { // list block
@@ -237,7 +237,7 @@ function rootBlocksToHtml(rootBlocks) {
 }
 
 function parse(engram) {
-	const rootBlocks = engram.split(RULES.rootBlockDelimiter);
+	const rootBlocks = engram.split(RULES.delimiter.rootBlock);
 
 	return rootBlocksToHtml(rootBlocks);
 }

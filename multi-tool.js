@@ -1,4 +1,7 @@
-const { MARKERS, MARKER_REGEX } = require('./constants');
+const { MARKERS, MARKER_REGEX, RULES } = require('./constants');
+
+const blockMetadataCoreStartIndex = MARKERS.delimiter.containerItem.length + MARKERS.metadata.container[1].length + 1;
+const blockMetadataCoreEndIndex = -(MARKERS.metadata.container[2].length + 1);
 
 function getBlockBody(blockContents) { // includes both the block marker and the body/text
 	const blockMetadata = getBlockMetadata(blockContents);
@@ -11,7 +14,7 @@ function getBlockBody(blockContents) { // includes both the block marker and the
 }
 
 function getBlockMetadata(blockContents) { // both \n and brackets {} are included
-	const indexOfBlockMetadata = blockContents.search(/\n{[\S\s]*}/);
+	const indexOfBlockMetadata = blockContents.search(RULES.metadata.block);
 
 	if (indexOfBlockMetadata >= 0) {
 		return blockContents.slice(indexOfBlockMetadata);
@@ -23,7 +26,7 @@ function getBlockMetadata(blockContents) { // both \n and brackets {} are includ
 function getBlockCore(blockContents) {
 	const blockBody = getBlockBody(blockContents);
 	const blockRegex = new RegExp(
-		`(?:${MARKER_REGEX.block.title.source}|${MARKER_REGEX.block.subtitle.level1.source}|${MARKER_REGEX.block.subtitle.level2.source}|${MARKER_REGEX.block.subtitle.level3.source}|${MARKER_REGEX.block.list.unordered.source}|${MARKERS.block.list.ordered})`,
+		`(?:${MARKER_REGEX.block.title.source}|${MARKER_REGEX.block.level1Subtitle.source}|${MARKER_REGEX.block.level2Subtitle.source}|${MARKER_REGEX.block.level3Subtitle.source}|${MARKER_REGEX.block.unorderedList.source}|${MARKERS.block.orderedList})`,
 	);
 	const blockMarker = blockBody.match(blockRegex) ? blockBody.match(blockRegex)[0] : undefined;
 
@@ -35,27 +38,27 @@ function getBlockCore(blockContents) {
 }
 
 function getFormattedBlockMetadata(blockMetadata) {
-	const trimmedMetadataCore = blockMetadata.slice(3, -2).trim();
-		// get rid of `\n{ ` and ` }`
-		// TODO: ref magic num
+	const trimmedMetadataCore = blockMetadata.slice(blockMetadataCoreStartIndex, blockMetadataCoreEndIndex).trim(); // get rid of `\n{ ` and ` }`
 
 	if (trimmedMetadataCore === '') {
-		return '\n{}';
+		return `${MARKERS.delimiter.containerItem}${MARKERS.metadata.container[1]}${MARKERS.metadata.container[2]}`;
 	}
 
-	return `\n{ ${trimmedMetadataCore.split(/\s+/).sort(
-		(a, b) => (b === '#Starred{}') - (a === '#Starred{}'),
-	).join(' ')} }`; // place Starred in front; should be stable given Node > v12.0.0
+	return `${MARKERS.delimiter.containerItem}${MARKERS.metadata.container[1]} ${trimmedMetadataCore.split(/\s+/).sort(
+		(a, b) => (
+			b === `${MARKERS.hybrid.engramLink.tag}Starred${MARKERS.metadata.container[1]}${MARKERS.metadata.container[2]}`) - (a === `${MARKERS.hybrid.engramLink.tag}Starred${MARKERS.metadata.container[1]}${MARKERS.metadata.container[2]}`
+		),
+	).join(' ')} ${MARKERS.metadata.container[2]}`; // place Starred in front; should be stable given Node > v12.0.0
 }
 
 function getMergedBlockMetadata(metadata1, metadata2) {
 	const mergedMetadataCore = `${getBlockMetadataCore(metadata1)}${getBlockMetadataCore(metadata2)}`;
 
 	if (mergedMetadataCore) {
-		return `\n{ ${mergedMetadataCore} }`;
+		return `${MARKERS.delimiter.containerItem}${MARKERS.metadata.container[1]} ${mergedMetadataCore} ${MARKERS.metadata.container[2]}`;
 	}
 
-	return '\n{}';
+	return `${MARKERS.delimiter.containerItem}${MARKERS.metadata.container[1]}${MARKERS.metadata.container[2]}`;
 }
 
 function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` if contents within
@@ -63,11 +66,11 @@ function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` if con
 		return '';
 	}
 
-	return getBlockMetadata(blockContents).slice(3, -2); // TODO: ref magic num
+	return getBlockMetadata(blockContents).slice(blockMetadataCoreStartIndex, blockMetadataCoreEndIndex);
 }
 
-function getBlockId(blockContents) { // TODO: check if this is needed
-	const matchedBlockId = getBlockMetadataCore(blockContents).match(/::.{6}(?=\s|$)/); // TODO: ref
+function getBlockId(blockContents) {
+	const matchedBlockId = getBlockMetadataCore(blockContents).match(RULES.metadata.blockId);
 
 	if (!matchedBlockId) {
 		return ''; // empty string is easier to work with
@@ -76,25 +79,28 @@ function getBlockId(blockContents) { // TODO: check if this is needed
 	return matchedBlockId[0];
 }
 
-function getBlockIdCore(blockContents) { // TODO: check if this is needed
-	return getBlockId(blockContents).slice(2); // get rid of block id marker (::)
+function getBlockIdCore(blockContents) {
+	return getBlockId(blockContents).slice(MARKERS.metadata.blockId.length); // get rid of block id marker (::)
 }
 
 function getEngramTitleFromLink(engramLink) {
-	if (engramLink.startsWith('*')) { // get rid of * and metadata
-		return engramLink.slice(1, /{.*?}/.exec(engramLink).index); // TODO: ref magic num
+	if (engramLink.startsWith(MARKERS.hybrid.engramLink.default)) { // get rid of * and metadata
+		return engramLink.slice(
+			MARKERS.hybrid.engramLink.default.length,
+			new RegExp(`${MARKER_REGEX.metadata.container[1].source}.*?${MARKER_REGEX.metadata.container[2].source}`).exec(engramLink).index,
+		);
 	}
 
-	return engramLink.slice(1, -2); // works because tags don't have metadata atm
+	return engramLink.slice(MARKERS.hybrid.engramLink.default.length, -(MARKERS.metadata.container[1].length + MARKERS.metadata.container[2].length)); // works because tags don't have metadata atm
 }
 
 function getBlockIdCoreFromLink(engramLink) {
-	if (engramLink.startsWith('*')) {
-		const linkMetadata = engramLink.match(/{.*}$/)[0];
-		const matchedBlockId = linkMetadata.slice(1, -1).match(/::.{6}(?=\s|$)/);
+	if (engramLink.startsWith(MARKERS.hybrid.engramLink.default)) {
+		const linkMetadata = engramLink.match(new RegExp(`${MARKERS.metadata.container[1]}.*${MARKERS.metadata.container[2]}$`))[0];
+		const matchedBlockId = linkMetadata.slice(MARKERS.metadata.container[1].length, -(MARKERS.metadata.container[2].length)).match(RULES.metadata.blockId);
 
 		if (matchedBlockId) {
-			return matchedBlockId[0].slice(2); // get rid of ::
+			return matchedBlockId[0].slice(MARKERS.metadata.blockId.length); // get rid of ::
 		}
 	}
 
