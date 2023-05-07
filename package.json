@@ -1,6 +1,6 @@
 {
   "name": "cryptarch",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "",
   "main": "cryptarch.js",
   "scripts": {
