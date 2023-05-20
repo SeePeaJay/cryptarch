@@ -107,6 +107,10 @@ function getBlockIdCoreFromLink(engramLink) {
   return ''; // if tag, return nothing
 }
 
+function getMetadataWithIdOnly(id) {
+  return `${MARKERS.delimiter.containerItem}${MARKERS.metadata.container[1]} ${MARKERS.metadata.blockId}${id} ${MARKERS.metadata.container[2]}`;
+}
+
 module.exports = {
   getBlockBody,
   getBlockMetadata,
@@ -118,4 +122,5 @@ module.exports = {
   getBlockIdCore,
   getEngramTitleFromLink,
   getBlockIdCoreFromLink,
+  getMetadataWithIdOnly,
 };

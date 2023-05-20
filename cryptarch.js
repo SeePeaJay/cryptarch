@@ -11,6 +11,7 @@ const {
   getBlockIdCore,
   getEngramTitleFromLink,
   getBlockIdCoreFromLink,
+  getMetadataWithIdOnly,
 } = require('./multi-tool');
 
 function decrypt(engram) {
@@ -33,6 +34,7 @@ module.exports = {
   getBlockIdCore,
   getEngramTitleFromLink,
   getBlockIdCoreFromLink,
+  getMetadataWithIdOnly,
 
   decrypt,
 };
