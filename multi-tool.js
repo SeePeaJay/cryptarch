@@ -1,4 +1,4 @@
-const { MARKERS, MARKER_REGEX, RULES } = require('./constants');
+const { MARKERS, MARKERS_IN_REGEX, RULES } = require('./constants');
 
 const blockMetadataCoreStartIndex = MARKERS.delimiter.containerItem.length + MARKERS.metadata.container[1].length + 1;
 const blockMetadataCoreEndIndex = -(MARKERS.metadata.container[2].length + 1);
@@ -26,7 +26,7 @@ function getBlockMetadata(blockContents) { // both \n and brackets {} are includ
 function getBlockCore(blockContents) {
   const blockBody = getBlockBody(blockContents);
   const blockRegex = new RegExp(
-    `(?:${MARKER_REGEX.block.title.source}|${MARKER_REGEX.block.level1Subtitle.source}|${MARKER_REGEX.block.level2Subtitle.source}|${MARKER_REGEX.block.level3Subtitle.source}|${MARKER_REGEX.block.unorderedList.source}|${MARKERS.block.orderedList})`,
+    `(?:${MARKERS_IN_REGEX.block.title.source}|${MARKERS_IN_REGEX.block.level1Subtitle.source}|${MARKERS_IN_REGEX.block.level2Subtitle.source}|${MARKERS_IN_REGEX.block.level3Subtitle.source}|${MARKERS_IN_REGEX.block.unorderedList.source}|${MARKERS_IN_REGEX.block.orderedList.source})`,
   );
   const blockMarker = blockBody.match(blockRegex) ? blockBody.match(blockRegex)[0] : undefined;
 
@@ -87,7 +87,7 @@ function getEngramTitleFromLink(engramLink) {
   if (engramLink.startsWith(MARKERS.hybrid.engramLink.default)) { // get rid of * and metadata
     return engramLink.slice(
       MARKERS.hybrid.engramLink.default.length,
-      new RegExp(`${MARKER_REGEX.metadata.container[1].source}.*?${MARKER_REGEX.metadata.container[2].source}`).exec(engramLink).index,
+      new RegExp(`${MARKERS_IN_REGEX.metadata.container[1].source}.*?${MARKERS_IN_REGEX.metadata.container[2].source}`).exec(engramLink).index,
     );
   }
 

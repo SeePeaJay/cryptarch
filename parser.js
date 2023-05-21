@@ -1,4 +1,4 @@
-const { MARKERS, RULES, getAllRules } = require('./constants');
+const { MARKERS, MARKERS_IN_REGEX, RULES, getAllRules } = require('./constants');
 
 function getUrlWithProtocol(url) {
   const httpPattern = /^((http|https|ftp):\/\/)/;
@@ -164,7 +164,7 @@ function treeNodeToHtml(treeNode) {
     const nodeIsUnordered = node.listItem.startsWith(MARKERS.block.unorderedList);
     const nodeHasChildren = node.children.length > 0;
 
-    const blockCore = node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS.block.unorderedList : MARKERS.block.orderedList)), '');
+    const blockCore = node.listItem.replace(new RegExp((nodeIsUnordered ? MARKERS_IN_REGEX.block.unorderedList.source : MARKERS_IN_REGEX.block.orderedList.source)), '');
 
     html += `<li>${blockCoreToHtml(blockCore)}${(nodeHasChildren ? treeToHtml(node.children) : '')}</li>`;
   });

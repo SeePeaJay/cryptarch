@@ -1,4 +1,4 @@
-const { MARKERS, MARKER_REGEX, RULES, escapeRegExp } = require('./constants');
+const { MARKERS, MARKERS_IN_REGEX, RULES, escapeRegExp } = require('./constants');
 const { parse } = require('./parser');
 const {
   getBlockBody,
@@ -20,7 +20,7 @@ function decrypt(engram) {
 
 module.exports = {
   MARKERS,
-  MARKER_REGEX,
+  MARKERS_IN_REGEX,
   RULES,
   escapeRegExp,
 
