@@ -88,21 +88,21 @@ const RULES = {
     autolink: /(?:https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/, // added non-capturing group
   },
 
-  hybrid: {
+  hybrid: { // use the likes of [^]* instead of .*? as otherwise `*Testing:a{} and *Testing:b{}` is considered a block link: https://stackoverflow.com/a/2503441
     engramLink: {
       block: new RegExp(
-        `^${MARKERS_IN_REGEX.hybrid.engramLink.default.source}.+?${MARKERS_IN_REGEX.metadata.container[1].source}[^\\n]*?${MARKERS_IN_REGEX.metadata.container[2].source}$`
+        `^${MARKERS_IN_REGEX.hybrid.engramLink.default.source}[^${MARKERS_IN_REGEX.metadata.container[1].source}]+${MARKERS_IN_REGEX.metadata.container[1].source}[^${MARKERS_IN_REGEX.metadata.container[2].source}\\n]*${MARKERS_IN_REGEX.metadata.container[2].source}$`
       ), // TODO: should block version also restrict * and # in title?
       inline: new RegExp(
-        `(?:${MARKERS_IN_REGEX.hybrid.engramLink.default.source}|${MARKERS_IN_REGEX.hybrid.engramLink.tag.source})[^#*\n]+?${MARKERS_IN_REGEX.metadata.container[1].source}.*?${MARKERS_IN_REGEX.metadata.container[2].source}`
+        `(?:${MARKERS_IN_REGEX.hybrid.engramLink.default.source}|${MARKERS_IN_REGEX.hybrid.engramLink.tag.source})[^${MARKERS_IN_REGEX.metadata.container[1].source}#*\\n]+${MARKERS_IN_REGEX.metadata.container[1].source}[^${MARKERS_IN_REGEX.metadata.container[2].source}\\n]*${MARKERS_IN_REGEX.metadata.container[2].source}`
       ), // for the time being, [^#*\n] prevents detecting normal usage of * and #, which may actually be ok (if using files as storage, special characters need to be avoided anyway)
     },
     image: {
       block: new RegExp(
-        `^${MARKERS_IN_REGEX.hybrid.image.source}[^\\s]+?${MARKERS_IN_REGEX.metadata.container[1].source}${MARKERS_IN_REGEX.metadata.container[2].source}$`
+        `^${MARKERS_IN_REGEX.hybrid.image.source}[^${MARKERS_IN_REGEX.metadata.container[1].source}\\s]+${MARKERS_IN_REGEX.metadata.container[1].source}${MARKERS_IN_REGEX.metadata.container[2].source}$`
       ),
       inline: new RegExp(
-        `${MARKERS_IN_REGEX.hybrid.image.source}[^\\s]+?${MARKERS_IN_REGEX.metadata.container[1].source}${MARKERS_IN_REGEX.metadata.container[2].source}`
+        `${MARKERS_IN_REGEX.hybrid.image.source}[^${MARKERS_IN_REGEX.metadata.container[1].source}\\s]+${MARKERS_IN_REGEX.metadata.container[1].source}${MARKERS_IN_REGEX.metadata.container[2].source}`
       ),
     },
   },
