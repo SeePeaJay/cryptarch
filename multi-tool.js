@@ -51,22 +51,13 @@ function getFormattedBlockMetadata(blockMetadata) {
   ).join(' ')} ${MARKERS.metadata.container[2]}`; // place Starred in front; should be stable given Node > v12.0.0
 }
 
-function getMergedBlockMetadata(metadata1, metadata2) {
-  const mergedMetadataCore = `${getBlockMetadataCore(metadata1)}${getBlockMetadataCore(metadata2)}`;
-
-  if (mergedMetadataCore) {
-    return `${MARKERS.delimiter.containerItem}${MARKERS.metadata.container[1]} ${mergedMetadataCore} ${MARKERS.metadata.container[2]}`;
-  }
-
-  return `${MARKERS.delimiter.containerItem}${MARKERS.metadata.container[1]}${MARKERS.metadata.container[2]}`;
-}
-
 function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` if contents within
   if (!getBlockMetadata(blockContents)) {
     return '';
   }
 
-  return getBlockMetadata(blockContents).slice(blockMetadataCoreStartIndex, blockMetadataCoreEndIndex);
+  return getBlockMetadata(blockContents).slice(blockMetadataCoreStartIndex, blockMetadataCoreEndIndex)
+    .replace(new RegExp(`\\s*${RULES.metadata.blockId.source}\\s*`), '');
 }
 
 function getBlockId(blockContents) {
@@ -116,7 +107,6 @@ module.exports = {
   getBlockMetadata,
   getBlockCore,
   getFormattedBlockMetadata,
-  getMergedBlockMetadata,
   getBlockMetadataCore,
   getBlockId,
   getBlockIdCore,
