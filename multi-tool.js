@@ -51,7 +51,7 @@ function getFormattedBlockMetadata(blockMetadata) {
   ).join(' ')} ${MARKERS.metadata.container[2]}`; // place Starred in front; should be stable given Node > v12.0.0
 }
 
-function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` if contents within
+function getBlockMetadataCore(blockContents) { // exclude `\n{ ` and ` }` and any block id if contents within
   if (!getBlockMetadata(blockContents)) {
     return '';
   }
